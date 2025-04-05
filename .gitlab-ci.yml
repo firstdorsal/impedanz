@@ -9,6 +9,7 @@ docker-build:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint: [""]
     script:
+        - cd web
         - export CI_REGISTRY=hub.vindelicum.eu
         - mkdir -p /kaniko/.docker
         - echo "{\"auths\":{\"https://$CI_REGISTRY\":{\"auth\":\"$(printf "%s:%s" "docker" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
