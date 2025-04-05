@@ -23,5 +23,11 @@ body,
     box-sizing: border-box;
 }
 
+/* Target elements starting with tp- class */
+.tp-dfwv {
+    z-index: 10;
+    overflow: hidden;
+}
+
 @media (prefers-color-scheme: light) {
 }

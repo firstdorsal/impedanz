@@ -11,14 +11,17 @@
     "dependencies": {
         "@fontsource/space-mono": "^5.2.5",
         "@tailwindcss/vite": "^4.1.1",
+        "@tweakpane/plugin-essentials": "^0.2.1",
         "@types/three": "^0.175.0",
         "autoprefixer": "^10.4.21",
         "postcss": "^8.5.3",
+        "postprocessing": "^6.37.2",
         "preact": "^10.26.2",
         "preact-router": "^4.1.2",
         "tailwindcss": "3.4.17",
         "three": "^0.175.0",
-        "ts-pattern": "^5.7.0"
+        "ts-pattern": "^5.7.0",
+        "tweakpane": "^4.0.5"
     },
     "devDependencies": {
         "@preact/preset-vite": "^2.10.1",

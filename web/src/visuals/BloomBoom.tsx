@@ -1,26 +1,34 @@
 import * as THREE from "three";
-import Visual from "./Visual";
 //@ts-ignore
-import {
-    EffectComposer,
-    OutputPass,
-    RenderPass,
-    UnrealBloomPass
-} from "three/examples/jsm/Addons.js";
+import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
+import { BlendFunction, BloomEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
+import { Component } from "preact";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { match } from "ts-pattern";
-import Visuals from "../routes/Visuals";
+import { Pane } from "tweakpane";
 
-export interface BloomBoomParams {
-    readonly bloomStrength?: number;
-    readonly bloomRadius?: number;
-    readonly bloomThreshold?: number;
+export interface BloomBoomProps {
+    readonly bloomIntensity?: number;
+    readonly bloomLuminanceSmoothing?: number;
+    readonly bloomLuminanceThreshold?: number;
     readonly bloomColor?: THREE.Color;
+    readonly bloomBlendFunction?: BlendFunction;
+    readonly mipmapBlur?: boolean;
+    readonly mipmapBlurLevels?: number;
+    readonly mipmapBlurRadius?: number;
     readonly geometryType?: BloomBoomGeometryType;
     readonly geometrySize?: number;
     readonly geometryPolygons?: number;
     readonly wireframe?: boolean;
     readonly name?: string;
     readonly frequencyMultiplier?: number;
+    readonly frequencyExponent?: number;
+    readonly displayGUI?: boolean;
+    readonly microphoneInput?: boolean;
+    readonly colorDelta?: number;
+    readonly rotationDelta?: number;
+    readonly autoRotate?: boolean;
 }
 
 export enum BloomBoomGeometryType {
@@ -31,54 +39,77 @@ export enum BloomBoomGeometryType {
     Icosahedron
 }
 
-interface BloomBoomVariables {
+interface BloomBoomState {
     readonly frequencyMultiplier: number;
+    readonly frequencyExponent: number;
 }
 
-export default class BloomBoom extends Visual {
-    parent: Visuals;
-    bloomPass: UnrealBloomPass;
-    bloomComposer: EffectComposer;
+export default class BloomBoom extends Component<BloomBoomProps, BloomBoomState> {
+    audio: THREE.Audio | undefined;
+    analyser: THREE.AudioAnalyser | undefined;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    clock: THREE.Clock;
+    listener: THREE.AudioListener | undefined;
+    controls: OrbitControls | undefined;
+    gui: GUI | undefined;
+    composer: EffectComposer;
+    bloomEffect: BloomEffect;
     uniforms: any;
 
-    variables: BloomBoomVariables;
-
-    constructor(parent: Visuals, params: BloomBoomParams) {
+    constructor(props: BloomBoomProps) {
         super();
 
-        this.parent = parent;
-        this.variables = {
-            frequencyMultiplier: params.frequencyMultiplier ?? 1.0
-        };
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true
+        });
 
-        this.bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            params.bloomStrength ?? 0.5,
-            params.bloomRadius ?? 0.1,
-            params.bloomThreshold ?? 0.4
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
         );
-        this.bloomComposer = new EffectComposer(this.parent.renderer);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+
+        this.clock = new THREE.Clock();
+
+        this.state = {
+            frequencyMultiplier: props.frequencyMultiplier ?? 1,
+            frequencyExponent: props.frequencyExponent ?? 1
+        };
 
         this.uniforms = {
             u_time: { type: "f", value: 0.0 },
             u_frequency: { type: "f", value: 0.0 },
-            u_red: { type: "f", value: params.bloomColor?.r ?? 0.8 },
-            u_green: { type: "f", value: params.bloomColor?.g ?? 0.6 },
-            u_blue: { type: "f", value: params.bloomColor?.b ?? 0.4 }
+            u_red: { type: "f", value: props.bloomColor?.r ?? 0.8 },
+            u_green: { type: "f", value: props.bloomColor?.g ?? 0.6 },
+            u_blue: { type: "f", value: props.bloomColor?.b ?? 0.4 }
         };
 
-        const renderScene = new RenderPass(this.parent.scene, this.parent.camera);
+        this.composer = new EffectComposer(this.renderer);
 
-        this.bloomComposer.addPass(renderScene);
-        this.bloomComposer.addPass(this.bloomPass);
+        this.bloomEffect = new BloomEffect({
+            blendFunction: props.bloomBlendFunction ?? BlendFunction.ADD,
+            luminanceThreshold: props.bloomLuminanceThreshold ?? 0.1,
+            luminanceSmoothing: props.bloomLuminanceSmoothing ?? 0.5,
+            intensity: props.bloomIntensity ?? 3,
+            radius: props.mipmapBlurRadius ?? 0.5,
+            mipmapBlur: props.mipmapBlur ?? true,
+            levels: props.mipmapBlurLevels ?? 3
+        });
 
-        const outputPass = new OutputPass();
-        this.bloomComposer.addPass(outputPass);
+        this.composer.addPass(new RenderPass(this.scene, this.camera));
+        this.composer.addPass(new EffectPass(this.camera, this.bloomEffect));
 
-        const geometrySize = params.geometrySize ?? 4;
-        const geometryPolygons = params.geometryPolygons ?? 32;
+        const geometrySize = props.geometrySize ?? 4;
+        const geometryPolygons = props.geometryPolygons ?? 32;
 
-        const geometry = match(params.geometryType)
+        const geometry = match(props.geometryType)
             .with(
                 BloomBoomGeometryType.Sphere,
                 () => new THREE.SphereGeometry(geometrySize, geometryPolygons, geometryPolygons)
@@ -115,44 +146,182 @@ export default class BloomBoom extends Visual {
             fragmentShader: fragmentShader
         });
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.material.wireframe = params.wireframe ?? true;
+        mesh.material.wireframe = props.wireframe ?? true;
 
-        this.parent.scene.add(mesh);
+        this.scene.add(mesh);
 
-        // add folder
-        if (this.parent.gui) {
-            const folder = this.parent.gui.addFolder("BloomBoom " + params.name);
-            // add to folder
-
-            folder.add(this.bloomPass, "strength", 0.0, 3.0, 0.001);
-            folder.add(this.bloomPass, "radius", 0.0, 10.0, 0.001);
-            folder.add(this.bloomPass, "threshold", 0.0, 10.0, 0.001);
-
-            folder.add(this.uniforms.u_red, "value", 0.0, 1.0, 0.001).name("Red");
-            folder.add(this.uniforms.u_green, "value", 0.0, 1.0, 0.001).name("Green");
-            folder.add(this.uniforms.u_blue, "value", 0.0, 1.0, 0.001).name("Blue");
-            folder
-                .add(this.variables, "frequencyMultiplier", 0.0, 100.0, 0.001)
-                .name("Frequency Multiplier");
+        if (props.displayGUI) {
+            this.createGUI();
         }
     }
 
+    createGUI = () => {
+        const pane = new Pane({});
+        pane.registerPlugin(EssentialsPlugin);
+
+        // @ts-ignore
+        const folder = pane.addFolder({ title: "Settings" });
+
+        folder.addBinding(this.state, "frequencyMultiplier", {
+            label: "Frequency Multiplier",
+            min: 0,
+            max: 10,
+            step: 0.01
+        });
+
+        folder.addBinding(this.state, "frequencyExponent", {
+            label: "Frequency Exponent",
+            min: 0,
+            max: 5,
+            step: 0.01
+        });
+
+        const colorFolder = folder.addFolder({ title: "Colors" });
+
+        colorFolder.addBinding(this.uniforms.u_red, "value", {
+            label: "Red",
+            min: 0,
+            max: 1,
+            step: 0.01
+        });
+
+        colorFolder.addBinding(this.uniforms.u_green, "value", {
+            label: "Green",
+            min: 0,
+            max: 1,
+            step: 0.01
+        });
+
+        colorFolder.addBinding(this.uniforms.u_blue, "value", {
+            label: "Blue",
+            min: 0,
+            max: 1,
+            step: 0.01
+        });
+
+        folder.addBinding(this.bloomEffect, "intensity", { min: 0, max: 100, step: 0.01 });
+        folder.addBinding(this.bloomEffect.mipmapBlurPass, "radius", {
+            min: 0,
+            max: 10,
+            step: 0.001
+        });
+        folder.addBinding(this.bloomEffect.mipmapBlurPass, "levels", { min: 1, max: 9, step: 1 });
+        folder.addBinding(this.bloomEffect.blendMode.opacity, "value", {
+            label: "opacity",
+            min: 0,
+            max: 1,
+            step: 0.01
+        });
+        folder.addBinding(this.bloomEffect.blendMode, "blendFunction", { options: BlendFunction });
+
+        let subfolder = folder.addFolder({ title: "Luminance Filter" });
+        subfolder.addBinding(this.bloomEffect.luminancePass, "enabled");
+        subfolder.addBinding(this.bloomEffect.luminanceMaterial, "threshold", {
+            min: 0,
+            max: 1,
+            step: 0.01
+        });
+        subfolder.addBinding(this.bloomEffect.luminanceMaterial, "smoothing", {
+            min: 0,
+            max: 5,
+            step: 0.01
+        });
+    };
+
     init = () => {};
 
-    animate = () => {
-        if (this.parent.analyser) {
-            this.uniforms.u_frequency.value =
-                this.parent.analyser.getAverageFrequency() * this.variables.frequencyMultiplier;
-        }
-        this.uniforms.u_time.value = this.parent.clock.getElapsedTime();
+    componentDidMount = async () => {
+        if (this.props.microphoneInput !== false) {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then((stream) => {
+                this.listener = new THREE.AudioListener();
+                this.audio = new THREE.Audio(this.listener);
+                const source = this.listener.context.createMediaStreamSource(stream);
+                //@ts-ignore
+                this.audio.setNodeSource(source);
+                this.audio.setVolume(10);
+                this.audio.getOutput().disconnect(this.listener.getInput());
 
-        this.bloomComposer.render();
+                this.analyser = new THREE.AudioAnalyser(this.audio, 32);
+                this.camera.add(this.listener);
+            });
+        }
+
+        const canvasBox = document.getElementById("canvasBox") as HTMLCanvasElement;
+        if (this.renderer.domElement) {
+            this.renderer.domElement.style.position = "absolute";
+
+            canvasBox.appendChild(this.renderer.domElement);
+        }
+        // Initialize camera position
+        this.camera.position.set(0, 0, 20);
+        this.camera.lookAt(this.scene.position);
+
+        // Initialize orbit controls
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true; // adds smooth damping effect
+        this.controls.dampingFactor = 0.05;
+        this.controls.minDistance = 0.5;
+        this.controls.maxDistance = 500;
+
+        // auto rotate
+
+        this.controls.autoRotate = this.props.autoRotate ?? false;
+
+        // handle resize
+        window.addEventListener("resize", () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        this.animate();
+    };
+
+    animate = () => {
+        this.controls?.update();
+
+        if (this.analyser) {
+            // update depeding on the multiplier and the curve use the curve to control the exponential growth of higher peaks
+            this.uniforms.u_frequency.value =
+                Math.pow(this.analyser.getAverageFrequency(), this.state.frequencyExponent) *
+                this.state.frequencyMultiplier;
+        } else {
+            // make it oscillate between getting bigger and smaller when it hits large numbers like 100 seconds
+
+            this.uniforms.u_frequency.value =
+                Math.sin(this.uniforms.u_time.value) * 500 + this.uniforms.u_time.value / 10;
+        }
+
+        if (this.props.colorDelta) {
+            this.uniforms.u_red.value = Math.abs(
+                Math.sin(this.uniforms.u_time.value * this.props.colorDelta)
+            );
+            this.uniforms.u_green.value = Math.abs(
+                Math.sin(this.uniforms.u_time.value * this.props.colorDelta + 2)
+            );
+            this.uniforms.u_blue.value = Math.abs(
+                Math.sin(this.uniforms.u_time.value * this.props.colorDelta + 4)
+            );
+        }
+
+        this.uniforms.u_time.value = this.clock.getElapsedTime();
+
+        this.composer.render();
+        this.renderer.render(this.scene, this.camera);
+
+        this.camera.lookAt(this.scene.position);
+
+        requestAnimationFrame(this.animate);
     };
 
     dispose = () => {};
 
-    setAnalyser = (analyser: THREE.AudioAnalyser | undefined) => {
-        this.parent.analyser = analyser;
+    render = () => {
+        return (
+            <>
+                <div id="canvasBox" className={"h-full w-full"}></div>
+            </>
+        );
     };
 }
 

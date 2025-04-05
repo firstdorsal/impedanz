@@ -2,7 +2,7 @@ import { Component } from "preact";
 import Router from "preact-router";
 import { CSSProperties } from "preact/compat";
 import Home from "./routes/Home";
-import Visuals from "./routes/Visuals";
+import Vis from "./routes/Vis";
 
 interface AppProps {
     readonly className?: string;
@@ -27,7 +27,7 @@ export default class App extends Component<AppProps, AppState> {
             >
                 <Router>
                     <Home path="/"></Home>
-                    <Visuals path="/visuals"></Visuals>
+                    <Vis path="/visuals"></Vis>
                 </Router>
             </div>
         );

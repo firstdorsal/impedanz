@@ -20,6 +20,7 @@ export default class Members extends Component<MembersProps, MembersState> {
 
     render = () => {
         // randomize the order of the members
+        members.sort(() => Math.random() - 0.5);
         return (
             <div
                 style={{ ...this.props.style }}
