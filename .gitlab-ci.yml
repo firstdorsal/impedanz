@@ -16,5 +16,5 @@ docker-build:
         - >-
             /kaniko/executor
             --context "${CI_PROJECT_DIR}/web"
-            --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+            --dockerfile "${CI_PROJECT_DIR}/web/Dockerfile"
             --destination "$CI_REGISTRY/$CI_PROJECT_NAME"
