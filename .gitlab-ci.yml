@@ -12,9 +12,9 @@ docker-build:
         
         - export CI_REGISTRY=hub.vindelicum.eu
         - mkdir -p /kaniko/.docker
-        - echo "{\"auths\":{\"https://$CI_REGISTRY\":{\"auth\":\"$(printf "%s:%s" "docker" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+        - echo "{\"auths\":{\"https://$CI_REGISTRY\":{\"auth\":\"$(printf "%s:%s" "docker" "${CI_PRIVATE_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
         - >-
             /kaniko/executor
             --context "${CI_PROJECT_DIR}/web"
             --dockerfile "${CI_PROJECT_DIR}/web/Dockerfile"
-            --destination "$CI_REGISTRY/$CI_PROJECT_NAME"
+            --destination "${CI_REGISTRY}/${CI_PROJECT_NAME}-web"
