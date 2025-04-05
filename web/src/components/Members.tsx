@@ -8,7 +8,7 @@ interface MembersProps {
 
 interface MembersState {}
 
-const members = ["Paul", "Pepe", "Milan"];
+const members = ["Paul", "Pepe", "Milan", "Felix"];
 
 export default class Members extends Component<MembersProps, MembersState> {
     constructor(props: MembersProps) {
