@@ -1,6 +1,7 @@
 import { Component } from "preact";
-import Router from "preact-router";
+import { Route, Router } from "preact-router";
 import { CSSProperties } from "preact/compat";
+import EventPage from "./routes/EventPage";
 import Home from "./routes/Home";
 import Vis from "./routes/Vis";
 
@@ -26,8 +27,9 @@ export default class App extends Component<AppProps, AppState> {
                 className={`App ${this.props.className ?? ""} h-full w-full`}
             >
                 <Router>
-                    <Home path="/"></Home>
-                    <Vis path="/visuals"></Vis>
+                    <Route path="/" component={Home} />
+                    <Route path="/events/:name" component={EventPage} />
+                    <Route path="/visuals" component={Vis} />
                 </Router>
             </div>
         );

@@ -29,6 +29,7 @@ export interface BloomBoomProps {
     readonly colorDelta?: number;
     readonly rotationDelta?: number;
     readonly autoRotate?: boolean;
+    readonly enableControls?: boolean;
 }
 
 export enum BloomBoomGeometryType {
@@ -257,15 +258,15 @@ export default class BloomBoom extends Component<BloomBoomProps, BloomBoomState>
         this.camera.lookAt(this.scene.position);
 
         // Initialize orbit controls
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.enableDamping = true; // adds smooth damping effect
-        this.controls.dampingFactor = 0.05;
-        this.controls.minDistance = 0.5;
-        this.controls.maxDistance = 500;
+        if (this.props.enableControls !== false) {
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls.enableDamping = true;
+            this.controls.dampingFactor = 0.05;
+            this.controls.minDistance = 0.5;
+            this.controls.maxDistance = 500;
 
-        // auto rotate
-
-        this.controls.autoRotate = this.props.autoRotate ?? false;
+            this.controls.autoRotate = this.props.autoRotate ?? false;
+        }
 
         // handle resize
         window.addEventListener("resize", () => {
@@ -281,13 +282,10 @@ export default class BloomBoom extends Component<BloomBoomProps, BloomBoomState>
         this.controls?.update();
 
         if (this.analyser) {
-            // update depeding on the multiplier and the curve use the curve to control the exponential growth of higher peaks
             this.uniforms.u_frequency.value =
                 Math.pow(this.analyser.getAverageFrequency(), this.state.frequencyExponent) *
                 this.state.frequencyMultiplier;
         } else {
-            // make it oscillate between getting bigger and smaller when it hits large numbers like 100 seconds
-
             this.uniforms.u_frequency.value =
                 Math.sin(this.uniforms.u_time.value) * 500 + this.uniforms.u_time.value / 10;
         }
