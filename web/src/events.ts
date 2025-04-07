@@ -2,7 +2,7 @@ import { Event } from "./types";
 
 export const events: Event[] = [
     {
-        title: "Genesis",
+        title: "genesis",
         imageUrl: "/assets/images/genesis.jpg",
         imageAlt: "A glowing polygon looking like a explosion of a star",
         dateTimeStart: new Date("2025-04-25T23:00:00+02:00"),
@@ -47,7 +47,7 @@ Driven by detail, shaped by sound and grounded in awareness – this is only the
             {
                 artists: [
                     {
-                        name: "katerklapso"
+                        name: "Fio_licioud"
                     },
                     {
                         name: "balanced crohn",

@@ -59,7 +59,7 @@ export default class EventDetail extends Component<EventDetailProps, EventDetail
                 <div className={"flex gap-8 font-bold underline"}>
                     <ICalendarLink
                         event={{
-                            title: event.title,
+                            title: "IMPEDANZ - " + event.title,
                             description: event.description,
                             location:
                                 event.location.name +
