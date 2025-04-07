@@ -1,6 +1,8 @@
 import { Component } from "preact";
 import { CSSProperties } from "preact/compat";
+import EventListItem from "../components/EventListItem";
 import Nav from "../components/Nav";
+import { events } from "../events";
 
 interface HomeProps {
     readonly className?: string;
@@ -21,9 +23,14 @@ export default class Home extends Component<HomeProps, HomeState> {
         return (
             <div
                 style={{ ...this.props.style }}
-                className={`Home ${this.props.className ?? ""} relative h-full w-full`}
+                className={`Home ${this.props.className ?? ""} h-full w-full`}
             >
                 <Nav></Nav>
+                <div className={"flex h-full w-full flex-col items-center justify-center p-4"}>
+                    {events.map((event) => {
+                        return <EventListItem event={event} />;
+                    })}
+                </div>
             </div>
         );
     };

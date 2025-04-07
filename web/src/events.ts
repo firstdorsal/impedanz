@@ -2,7 +2,9 @@ import { Event } from "./types";
 
 export const events: Event[] = [
     {
-        name: "Genesis",
+        title: "Genesis",
+        imageUrl: "/assets/images/genesis.jpg",
+        imageAlt: "A glowing polygon looking like a explosion of a star",
         dateTimeStart: new Date("2025-04-25T23:00:00+02:00"),
         dateTimeEnd: new Date("2025-04-26T07:00:00+02:00"),
         location: {

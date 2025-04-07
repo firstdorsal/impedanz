@@ -42,13 +42,24 @@ export default class EventDetail extends Component<EventDetailProps, EventDetail
         return (
             <div
                 style={{ ...this.props.style }}
-                className={`EventDetail ${this.props.className ?? ""} flex flex-col gap-4 text-left`}
+                className={`EventDetail ${this.props.className ?? ""} flex flex-col gap-4 bg-zinc-900 p-6 text-left`}
             >
-                <h1 className={"text-6xl font-bold"}>{event.name}</h1>
-                <div className={"flex gap-8 underline"}>
+                <h1 className={"text-6xl font-bold"}>{event.title}</h1>
+                {event.imageUrl && (
+                    <img
+                        src={event.imageUrl}
+                        alt={event.imageAlt}
+                        className={""}
+                        style={{ maxWidth: "100%", height: "auto" }}
+                        width={1080}
+                        height={1080}
+                        loading={"lazy"}
+                    />
+                )}
+                <div className={"flex gap-8 font-bold underline"}>
                     <ICalendarLink
                         event={{
-                            title: event.name,
+                            title: event.title,
                             description: event.description,
                             location:
                                 event.location.name +
@@ -59,7 +70,7 @@ export default class EventDetail extends Component<EventDetailProps, EventDetail
                             startTime: event.dateTimeStart.toISOString(),
                             endTime: event.dateTimeEnd.toISOString()
                         }}
-                        filename={event.name + ".ics"}
+                        filename={event.title + ".ics"}
                     >
                         <div
                             className={"flex items-center gap-2"}
@@ -70,13 +81,15 @@ export default class EventDetail extends Component<EventDetailProps, EventDetail
                         </div>
                     </ICalendarLink>
 
-                    <div className={"flex items-center gap-2"}>
-                        <IoTicketOutline size={20} />
+                    {event.ticketLink && (
+                        <div className={"flex items-center gap-2"}>
+                            <IoTicketOutline size={20} />
 
-                        <a href={event.ticketLink} rel="no-referrer">
-                            Tickets
-                        </a>
-                    </div>
+                            <a href={event.ticketLink} rel="no-referrer">
+                                Tickets
+                            </a>
+                        </div>
+                    )}
                 </div>
                 <p>{event.description}</p>
                 <div className={"flex flex-col"}>

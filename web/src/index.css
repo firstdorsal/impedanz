@@ -29,5 +29,9 @@ body,
     overflow: hidden;
 }
 
+.active {
+    text-decoration: underline;
+}
+
 @media (prefers-color-scheme: light) {
 }

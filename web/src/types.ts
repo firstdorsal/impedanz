@@ -1,10 +1,12 @@
 export interface Event {
-    readonly name: string;
+    readonly title: string;
+    readonly imageUrl?: string;
+    readonly imageAlt?: string;
     readonly description: string;
     readonly dateTimeStart: Date;
     readonly dateTimeEnd: Date;
     readonly location: Location;
-    readonly ticketLink: string;
+    readonly ticketLink?: string;
     readonly genre: string;
     readonly ageRestriction?: string;
     readonly acts?: Act[];

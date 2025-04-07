@@ -2,15 +2,15 @@ import { Component } from "preact";
 import { CSSProperties } from "preact/compat";
 import Nav from "../components/Nav";
 
-interface AwarenessProps {
+interface AboutProps {
     readonly className?: string;
     readonly style?: CSSProperties;
 }
 
-interface AwarenessState {}
+interface AboutState {}
 
-export default class Awareness extends Component<AwarenessProps, AwarenessState> {
-    constructor(props: AwarenessProps) {
+export default class About extends Component<AboutProps, AboutState> {
+    constructor(props: AboutProps) {
         super(props);
         this.state = {};
     }
@@ -19,10 +19,7 @@ export default class Awareness extends Component<AwarenessProps, AwarenessState>
 
     render = () => {
         return (
-            <div
-                style={{ ...this.props.style }}
-                className={`Awareness ${this.props.className ?? ""}`}
-            >
+            <div style={{ ...this.props.style }} className={`About ${this.props.className ?? ""}`}>
                 <Nav />
             </div>
         );
