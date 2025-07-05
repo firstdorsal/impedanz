@@ -26,7 +26,9 @@ export default class Home extends Component<HomeProps, HomeState> {
                 className={`Home ${this.props.className ?? ""} h-full w-full`}
             >
                 <Nav></Nav>
-                <div className={"flex h-full w-full flex-col items-center justify-center p-4"}>
+                <div
+                    className={"flex h-full w-full flex-col items-center justify-center gap-4 p-4"}
+                >
                     {events.map((event) => {
                         return <EventListItem event={event} />;
                     })}

@@ -38,7 +38,6 @@ export default class Visuals extends Component<VisualsProps, VisualsState> {
                     frequencyMultiplier: 0.84,
                     frequencyExponent: 1.3,
                     mipmapBlurRadius: 1.6,
-
                     bloomBlendFunction: BlendFunction.HARD_LIGHT,
                     mipmapBlurLevels: 2,
                     displayGUI: true

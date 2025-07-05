@@ -145,7 +145,9 @@ export default class EventDetail extends Component<EventDetailProps, EventDetail
                                                         <a
                                                             href={artist.url}
                                                             rel="noreferrer"
-                                                            className={"underline"}
+                                                            className={
+                                                                artist.url ? "underline" : ""
+                                                            }
                                                         >
                                                             {artist.name}
                                                         </a>
