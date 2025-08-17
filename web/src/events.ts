@@ -157,7 +157,8 @@ Driven by detail, shaped by sound and grounded in awareness – this is only the
                         url: "https://www.instagram.com/pepe_8_6_1/"
                     },
                     {
-                        name: "drischa"
+                        name: "drischa",
+                        url: "https://www.instagram.com/dri.scha/"
                     }
                 ],
                 artistJoiner: "b2b"
