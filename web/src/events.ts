@@ -122,6 +122,46 @@ Driven by detail, shaped by sound and grounded in awareness – this is only the
         location: cityClubAugsburg,
         genre: "Techno",
         ageRestriction: "18+",
-        imageUrl: "/assets/images/trinity-square.jpg"
+        imageUrl: "/assets/images/trinity-square.jpg",
+        imageAlt: "A green stylized version of the trinity explosion.",
+        acts: [
+            {
+                artists: [
+                    {
+                        name: "TONSAMMLER",
+                        url: "https://www.instagram.com/ton.sammler/"
+                    },
+                    {
+                        name: "Animar"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "kardioversion",
+                        url: "https://www.instagram.com/kardioversion.music/"
+                    },
+                    {
+                        name: "DJCANDYFLIP",
+                        url: "https://www.instagram.com/dj.candyflip/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "PEPE",
+                        url: "https://www.instagram.com/pepe_8_6_1/"
+                    },
+                    {
+                        name: "drischa"
+                    }
+                ],
+                artistJoiner: "b2b"
+            }
+        ]
     }
 ] as const;
