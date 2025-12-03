@@ -6,6 +6,12 @@ const cityClubAugsburg = {
     longitude: 10.895053
 };
 
+const karo10 = {
+    name: "Karo10",
+    latitude: 48.369852,
+    longitude: 10.898206
+};
+
 export const events: Event[] = [
     {
         title: "genesis",
@@ -164,5 +170,103 @@ Driven by detail, shaped by sound and grounded in awareness – this is only the
                 artistJoiner: "b2b"
             }
         ]
+    },
+    {
+        title: "galaxy",
+        description: "",
+        dateTimeStart: new Date("2025-12-12T20:00:00+01:00"),
+        dateTimeEnd: new Date("2025-12-12T06:00:00+01:00"),
+        location: cityClubAugsburg,
+        genre: "Techno, Hardtrance, Hardgroove, 140-160BPM",
+        ageRestriction: "18+",
+        imageUrl: "/assets/images/galaxy-square.jpg",
+        imageAlt: "A stylized image of a galaxy with red and blue colors.",
+        acts: [
+            {
+                artists: [
+                    {
+                        name: "DJanis",
+                        url: "https://www.instagram.com/janisweil"
+                    }
+                ]
+            },
+            {
+                artists: [
+                    {
+                        name: "dr.penn",
+                        url: "https://www.instagram.com/dr.penn_.wav/"
+                    },
+                    {
+                        name: "nile",
+                        url: "https://www.instagram.com/nile.techno/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "babybangs",
+                        url: "https://www.instagram.com/leoxleopard"
+                    },
+                    {
+                        name: "Fio_licious",
+                        url: "https://www.instagram.com/fio_licious/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "drischa",
+                        url: "https://www.instagram.com/dri.scha/"
+                    },
+                    {
+                        name: "PEPE",
+                        url: "https://www.instagram.com/_pepe_matteo_/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "Animar",
+                        url: "https://www.instagram.com/animar.imp/"
+                    },
+                    {
+                        name: "TONSAMMLER",
+                        url: "https://www.instagram.com/ton.sammler/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            },
+            {
+                artists: [
+                    {
+                        name: "effymichelle",
+                        url: "https://www.instagram.com/effymichelle/"
+                    },
+                    {
+                        name: "pflanzenschranz",
+                        url: "https://www.instagram.com/pflanzenschranz/"
+                    }
+                ],
+                artistJoiner: "b2b"
+            }
+        ]
+    },
+    {
+        title: "apokalypsis",
+        description: "",
+        dateTimeStart: new Date("2025-12-20T23:00:00+01:00"),
+        dateTimeEnd: new Date("2025-12-21T06:00:00+01:00"),
+        location: karo10,
+        genre: "Techno, Pop",
+        ageRestriction: "18+",
+        imageUrl: "/assets/images/apokalypsis-square.jpg",
+        imageAlt: "A Ortographic view of the floors where the party takes place.",
+        acts: []
     }
 ] as const;
