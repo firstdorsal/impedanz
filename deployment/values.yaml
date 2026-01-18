@@ -1,0 +1,7 @@
+services:
+    web:
+        build:
+            enabled: false
+            context: ../../web
+            dockerfile: Dockerfile
+        image: ghcr.io/firstdorsal/impedanz-web

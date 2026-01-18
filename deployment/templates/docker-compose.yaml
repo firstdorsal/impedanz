@@ -1,0 +1,11 @@
+services:
+    web:
+        {{- if eq .services.web.build.enabled true }}
+        build:
+            context: "{{ .services.web.build.context }}"
+            dockerfile: "{{ .services.web.build.dockerfile }}"
+        {{- else }}
+        image: "{{ .services.web.image }}"
+        {{- end }}
+        restart: unless-stopped
+

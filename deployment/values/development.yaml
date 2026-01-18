@@ -1,0 +1,7 @@
+services:
+    web:
+        build:
+            enabled: true
+            context: ../../web
+            dockerfile: Dockerfile
+        # image: your-registry/web
