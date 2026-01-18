@@ -1,3 +1,6 @@
+{{- $webHostname := mowsJoinDomain .services.web.subdomain (ternary "localhost" .domain (eq .routing "local")) -}}
+{{- $mattermostHostname := mowsJoinDomain .services.mattermost.subdomain (ternary "localhost" .domain (eq .routing "local")) -}}
+
 services:
     web:
         {{- if eq .services.web.build.enabled true }}
@@ -7,5 +10,155 @@ services:
         {{- else }}
         image: "{{ .services.web.image }}"
         {{- end }}
+        container_name: impedanz-web
         restart: unless-stopped
+        networks:
+            - {{ .reverseProxy.network }}
+        labels:
+            traefik:
+                docker:
+                    network: {{ .reverseProxy.network }}
+                enable: true
+                http:
+                    routers:
+                        impedanz-web:
+                            rule: "Host(`{{ $webHostname }}`)"
+                            entrypoints: {{ ternary "websecure" "web" .tls }}
+                            service: impedanz-web
+                            {{- if eq .tls true }}
+                            tls:
+                                certresolver: "default"
+                                domains:
+                                    - main: "{{ .domain }}"
+                                      sans: "*.{{ .domain }}"
+                            {{- end }}
+                        {{- if ne .routing "local" }}
+                        impedanz-web-www:
+                            rule: "Host(`www.{{ .domain }}`)"
+                            entrypoints: {{ ternary "websecure" "web" .tls }}
+                            service: impedanz-web
+                            middlewares: impedanz-www-redirect
+                            {{- if eq .tls true }}
+                            tls:
+                                certresolver: "default"
+                                domains:
+                                    - main: "{{ .domain }}"
+                                      sans: "*.{{ .domain }}"
+                            {{- end }}
+                    middlewares:
+                        impedanz-www-redirect:
+                            redirectregex:
+                                regex: "^https?://www\\.(.+)"
+                                replacement: "{{ ternary "https" "http" .tls }}://$${1}"
+                                permanent: true
+                        {{- end }}
+                    services:
+                        impedanz-web:
+                            loadbalancer:
+                                server:
+                                    port: "80"
 
+    {{- if eq .services.postgres.enabled true }}
+    impedanz-mattermost-postgres:
+        image: "{{ .services.postgres.image }}"
+        container_name: impedanz-mattermost-postgres
+        restart: unless-stopped
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=mattermost
+        volumes:
+            - {{ .services.postgres.volume.value }}:/var/lib/postgresql/data
+        networks:
+            - impedanz-mattermost-internal
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "mattermost"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    {{- end }}
+
+    {{- if eq .services.mattermost.enabled true }}
+    mattermost:
+        image: "{{ .services.mattermost.image }}"
+        container_name: impedanz-mattermost
+        restart: unless-stopped
+        depends_on:
+            impedanz-mattermost-postgres:
+                condition: service_healthy
+        environment:
+            - TZ=Europe/Berlin
+            - MM_SQLSETTINGS_DRIVERNAME=postgres
+            - MM_SQLSETTINGS_DATASOURCE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@impedanz-mattermost-postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+            - MM_BLEVESETTINGS_INDEXDIR=/mattermost/bleve-indexes
+            - MM_SERVICESETTINGS_SITEURL={{ ternary "https://" "http://" .tls }}{{ $mattermostHostname }}
+            - MM_EMAILSETTINGS_SMTPSERVER=${MM_SMTP_SERVER}
+            - MM_EMAILSETTINGS_SMTPPORT=${MM_SMTP_PORT}
+            - MM_EMAILSETTINGS_SMTPUSERNAME=${MM_SMTP_USERNAME}
+            - MM_EMAILSETTINGS_SMTPPASSWORD=${MM_SMTP_PASSWORD}
+            - MM_EMAILSETTINGS_CONNECTIONSECURITY=${MM_SMTP_SECURITY}
+            - MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS=${MM_SMTP_ENABLED}
+        volumes:
+            - {{ .services.mattermost.volume.value }}:/mattermost
+        networks:
+            - {{ .reverseProxy.network }}
+            - impedanz-mattermost-internal
+        labels:
+            traefik:
+                docker:
+                    network: {{ .reverseProxy.network }}
+                enable: true
+                http:
+                    routers:
+                        impedanz-mattermost:
+                            rule: "Host(`{{ $mattermostHostname }}`)"
+                            entrypoints: {{ ternary "websecure" "web" .tls }}
+                            service: impedanz-mattermost
+                            {{- if eq .tls true }}
+                            tls:
+                                certresolver: "default"
+                                domains:
+                                    - main: "{{ .domain }}"
+                                      sans: "*.{{ .domain }}"
+                            {{- end }}
+                    services:
+                        impedanz-mattermost:
+                            loadbalancer:
+                                server:
+                                    port: "8065"
+    {{- end }}
+
+    {{- if eq .reverseProxy.create true }}
+    traefik:
+        image: traefik:v3
+        container_name: impedanz-traefik
+        restart: unless-stopped
+        command:
+            - "--providers.docker=true"
+            - "--entrypoints.web.address=:80"
+        networks:
+            - {{ .reverseProxy.network }}
+        ports:
+            - "80:80"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+    {{- end }}
+
+{{- if or (eq .services.postgres.volume.type "volume") (eq .services.mattermost.volume.type "volume") }}
+volumes:
+    {{- if eq .services.postgres.volume.type "volume" }}
+    {{ .services.postgres.volume.value }}:
+    {{- end }}
+    {{- if eq .services.mattermost.volume.type "volume" }}
+    {{ .services.mattermost.volume.value }}:
+    {{- end }}
+{{- end }}
+
+networks:
+    {{ .reverseProxy.network }}:
+        {{- if ne .reverseProxy.create true }}
+        external: true
+        {{- else }}
+        name: {{ .reverseProxy.network }}
+        {{- end }}
+    impedanz-mattermost-internal:

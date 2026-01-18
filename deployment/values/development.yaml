@@ -1,7 +1,30 @@
+routing: local
+tls: false
+
+reverseProxy:
+    create: true
+    network: impedanz-network
+
+domain: impedanz.net
+
 services:
     web:
+        subdomain: ""
         build:
             enabled: true
             context: ../../web
             dockerfile: Dockerfile
-        # image: your-registry/web
+        image: ghcr.io/firstdorsal/impedanz-web
+    mattermost:
+        enabled: true
+        subdomain: mattermost
+        image: mattermost/mattermost-team-edition:latest
+        volume:
+            type: volume
+            value: impedanz-mattermost-dev
+    postgres:
+        enabled: true
+        image: postgres:18-alpine
+        volume:
+            type: volume
+            value: impedanz-mattermost-postgres-dev

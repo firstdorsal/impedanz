@@ -1,7 +1,30 @@
+routing: domain # local | domain
+tls: true # only supported with existing traefik
+
+reverseProxy:
+    create: false
+    network: rp
+
+domain: impedanz.net
+
 services:
     web:
+        subdomain: ""
         build:
             enabled: false
             context: ../../web
             dockerfile: Dockerfile
         image: ghcr.io/firstdorsal/impedanz-web
+    mattermost:
+        enabled: true
+        subdomain: mattermost
+        image: mattermost/mattermost-team-edition:latest
+        volume:
+            type: volume
+            value: impedanz-mattermost
+    postgres:
+        enabled: true
+        image: postgres:18-alpine
+        volume:
+            type: volume
+            value: impedanz-mattermost-postgres

@@ -4,4 +4,4 @@ metadata:
     description: ""
     version: "0.1"
 spec:
-    compose: {}
+    compose:
