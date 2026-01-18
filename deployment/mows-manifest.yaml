@@ -5,3 +5,4 @@ metadata:
     version: "0.1"
 spec:
     compose:
+        repositoryUrl: https://github.com/firstdorsal/impedanz/
