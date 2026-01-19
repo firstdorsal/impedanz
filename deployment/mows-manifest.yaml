@@ -2,7 +2,7 @@ manifestVersion: "0.1"
 metadata:
     name: impedanz
     description: ""
-    version: "0.1"
+    version: "0.2"
 spec:
     compose:
         repositoryUrl: https://github.com/firstdorsal/impedanz/

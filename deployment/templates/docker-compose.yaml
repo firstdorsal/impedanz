@@ -3,7 +3,7 @@
 
 services:
     web:
-        {{- if eq .services.web.build.enabled true }}
+        {{- if eq .servixes.web.build.enabled true }}
         build:
             context: "{{ .services.web.build.context }}"
             dockerfile: "{{ .services.web.build.dockerfile }}"
@@ -102,6 +102,10 @@ services:
             - MM_EMAILSETTINGS_REQUIREEMAILVERIFICATION=true
             - MM_EMAILSETTINGS_FEEDBACKEMAIL=${MM_SMTP_DISPLAY_EMAIL}
             - MM_EMAILSETTINGS_FEEDBACKNAME=${MM_SMTP_DISPLAY_NAME}
+            - MM_LOGSETTINGS_ENABLEDIAGNOSTICS=false
+            - MM_LOGSETTINGS_ENABLESENTRY=false
+            - MM_SERVICESETTINGS_ENABLESECURITYFIXALERT=false
+            - MM_SERVICESETTINGS_ENABLELINKPREVIEWS=false
         volumes:
             - {{ .services.mattermost.volume.value }}:/mattermost
         networks:
