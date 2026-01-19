@@ -99,6 +99,9 @@ services:
             - MM_EMAILSETTINGS_ENABLESMTPAUTH=${MM_SMTP_AUTH}
             - MM_EMAILSETTINGS_CONNECTIONSECURITY=${MM_SMTP_SECURITY}
             - MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS=${MM_SMTP_ENABLED}
+            - MM_EMAILSETTINGS_REQUIREEMAILVERIFICATION=true
+            - MM_EMAILSETTINGS_FEEDBACKEMAIL=${MM_SMTP_DISPLAY_EMAIL}
+            - MM_EMAILSETTINGS_FEEDBACKNAME=${MM_SMTP_DISPLAY_NAME}
         volumes:
             - {{ .services.mattermost.volume.value }}:/mattermost
         networks:

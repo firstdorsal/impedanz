@@ -4,13 +4,17 @@
 
 ### A1-A3 Plakate
 
-594mm x 841mm @300DPI = 7016px x 9933px  
+Immer für A1 planen, kleiner machen geht dann ja immer ohne Probleme.
+
+A1: 594mm x 841mm @300DPI = 7016px x 9933px  
 In der Regel Hochkannt
 
 ### A6 Flyer
 
 105 x 148mm @300DPI = 1240px x 1748px  
-In der Regel Hochkannt
+In der Regel Hochkannt  
+Beidseitig Bedruckt, z.B. vorne catchy hinten Infos.
+Sonst kommt beidseitig das gleiche Motiv drauf.
 
 ## Digital
 
@@ -36,6 +40,8 @@ Breite x Höhe
 Breite x Höhe  
 3240px x 1350px
 
+---
+
 # Fonts/Schriftarten
 
 **Schriftart des Logos und für Überschriften**  
@@ -50,11 +56,13 @@ https://fonts.google.com/specimen/Open+Sans
 **Beide herunterladen**  
 https://fonts.google.com/share?selection.family=Open+Sans:wght@700|Space+Mono:ital,wght@0,400;0,700;1,400;1,700
 
+---
+
 # Logo
 
-## Logo PNG (1000x1000)
+Farbe des logos oder wordmarks sollte generell weiß auf (dunkle farbe) sein, darf aber bei zu schwachem Kontrast schwarz auf (helle farbe) sein.
 
-Farbe sollte weiß auf schwarz sein, darf aber bei zu schwachem Kontrast ausgetauscht werden.
+## Standalone Logo PNG (1000x1000)
 
 ![Logo](logo/logo-1000.png)
 
@@ -84,5 +92,7 @@ Attribution inklusive URL Insta/Website etc. bitte mitteilen, wird auf unserer W
 
 ## Keine Bilder ohne Rechte
 
--   Keine Bilder aus dem Internet mit Namensnennung o.Ä.
+-   Keine Bilder aus dem Internet mit Lizenz die Namensnennung erfordert o.Ä.
 -   Kommerzielle Nutzung ohne Namensnennung oder Public Domain ist okay
+
+## Schriften und wichtige Informationen immer mit genug Abstand zum Rand anlegen
