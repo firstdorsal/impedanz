@@ -106,6 +106,7 @@ services:
             - MM_LOGSETTINGS_ENABLESENTRY=false
             - MM_SERVICESETTINGS_ENABLESECURITYFIXALERT=false
             - MM_SERVICESETTINGS_ENABLELINKPREVIEWS=false
+            - MM_PLUGINSETTINGS_ENABLEUPLOADS=true
         volumes:
             - {{ .services.mattermost.volume.value }}:/mattermost
         networks:

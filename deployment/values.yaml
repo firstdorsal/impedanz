@@ -18,7 +18,7 @@ services:
     mattermost:
         enabled: true
         subdomain: mattermost
-        image: mattermost/mattermost-team-edition:latest
+        image: ghcr.io/firstdorsal/mattermost-rolling-release:latest
         volume:
             type: volume
             value: impedanz-mattermost
