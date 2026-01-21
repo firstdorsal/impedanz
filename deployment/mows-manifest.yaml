@@ -2,7 +2,35 @@ manifestVersion: "0.1"
 metadata:
     name: impedanz
     description: ""
-    version: "0.2"
+    version: "0.3"
 spec:
     compose:
-        repositoryUrl: https://github.com/firstdorsal/impedanz/
+        valuesFilePath: values/development.yaml
+        providedSecrets:
+            MM_SMTP_SERVER:
+                default: null
+                optional: false
+            MM_SMTP_PORT:
+                default: 465
+                optional: false
+            MM_SMTP_USERNAME:
+                default: no-reply@example.com
+                optional: false
+            MM_SMTP_PASSWORD:
+                default: null
+                optional: false
+            MM_SMTP_AUTH:
+                default: true
+                optional: false
+            MM_SMTP_SECURITY:
+                default: TLS
+                optional: false
+            MM_SMTP_ENABLED:
+                default: true
+                optional: false
+            MM_SMTP_DISPLAY_EMAIL:
+                default: no-reply@example.com
+                optional: false
+            MM_SMTP_DISPLAY_NAME:
+                default: Example Mattermost
+                optional: false

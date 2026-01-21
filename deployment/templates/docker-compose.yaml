@@ -3,7 +3,7 @@
 
 services:
     web:
-        {{- if eq .servixes.web.build.enabled true }}
+        {{- if eq .services.web.build.enabled true }}
         build:
             context: "{{ .services.web.build.context }}"
             dockerfile: "{{ .services.web.build.dockerfile }}"
@@ -112,6 +112,10 @@ services:
             - {{ .reverseProxy.network }}
             - impedanz-mattermost-internal
         labels:
+            com:
+                centurylinklabs:
+                    watchtower:
+                        enable: true
             traefik:
                 docker:
                     network: {{ .reverseProxy.network }}
