@@ -1,0 +1,46 @@
+---
+import { site } from "../data/site";
+import type { Locale } from "../i18n";
+import { t } from "../i18n";
+import SectionHeading from "./SectionHeading.astro";
+
+interface Props {
+    readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const translations = t(locale);
+---
+
+<section aria-labelledby="awareness">
+    <SectionHeading id="awareness" index="04" title="awareness" note={translations.awarenessNote} />
+    <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="border-line flex flex-col gap-6 p-4 md:border-r md:p-8">
+            <p class="max-w-prose text-lg leading-relaxed">{translations.awarenessIntro}</p>
+            <p class="text-dim max-w-prose leading-relaxed">{translations.awarenessContact}</p>
+            <a
+                href={`mailto:${site.bookingEmail}?subject=Awareness`}
+                class="border-line hover:border-acid hover:text-acid w-fit border px-5 py-2.5 font-mono text-sm lowercase transition-colors"
+            >
+                {translations.awarenessCta}
+            </a>
+        </div>
+        <dl>
+            {
+                translations.awarenessPrinciples.map((principle, index) => (
+                    <div class="border-line border-b p-4 md:px-8 md:py-6">
+                        <dt class="mb-2 font-mono text-xl font-bold lowercase">
+                            <span class="text-dim mr-3 text-sm font-normal">
+                                {String(index + 1).padStart(2, "0")}
+                            </span>
+                            {principle.title}
+                        </dt>
+                        <dd class="text-dim max-w-prose text-sm leading-relaxed">
+                            {principle.text}
+                        </dd>
+                    </div>
+                ))
+            }
+        </dl>
+    </div>
+</section>

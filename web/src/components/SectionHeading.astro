@@ -1,0 +1,20 @@
+---
+interface Props {
+    readonly index: string;
+    readonly title: string;
+    readonly id?: string;
+    readonly note?: string;
+}
+
+const { index, title, id, note } = Astro.props;
+---
+
+<div
+    {id}
+    class="border-line flex scroll-mt-16 items-baseline justify-between gap-4 border-y px-4 py-4 md:px-8"
+>
+    <h2 class="font-mono text-2xl font-bold lowercase md:text-4xl">
+        <span class="text-dim mr-3 text-sm font-normal md:text-base">{index} /</span>{title}
+    </h2>
+    {note && <span class="text-dim hidden font-mono text-xs lowercase md:block">{note}</span>}
+</div>

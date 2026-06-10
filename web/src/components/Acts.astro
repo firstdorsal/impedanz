@@ -1,0 +1,41 @@
+---
+import type { Act } from "../data/types";
+
+interface Props {
+    readonly acts: Act[];
+    readonly compact?: boolean;
+}
+
+const { acts, compact = false } = Astro.props;
+---
+
+<ul class:list={["flex flex-col", compact ? "gap-1" : "gap-3"]}>
+    {
+        acts.map((act) => (
+            <li class="font-mono lowercase">
+                {act.time && <span class="text-dim mr-3 text-xs">{act.time}</span>}
+                <span class:list={[compact ? "text-sm" : "text-base"]}>
+                    {act.artists.map((artist, index) => (
+                        <>
+                            {index > 0 && (
+                                <span class="text-dim mx-2 text-xs">{act.artistJoiner ?? "+"}</span>
+                            )}
+                            {artist.url ? (
+                                <a
+                                    href={artist.url}
+                                    rel="noreferrer"
+                                    target="_blank"
+                                    class="decoration-line hover:text-acid hover:decoration-acid underline underline-offset-4 transition-colors"
+                                >
+                                    {artist.name}
+                                </a>
+                            ) : (
+                                <span>{artist.name}</span>
+                            )}
+                        </>
+                    ))}
+                </span>
+            </li>
+        ))
+    }
+</ul>

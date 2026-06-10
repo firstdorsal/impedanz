@@ -1,0 +1,119 @@
+---
+import "@fontsource/open-sans/400.css";
+import "@fontsource/open-sans/600.css";
+import openSans400Woff2 from "@fontsource/open-sans/files/open-sans-latin-400-normal.woff2?url";
+import "@fontsource/space-mono/400.css";
+import spaceMono400Woff2 from "@fontsource/space-mono/files/space-mono-latin-400-normal.woff2?url";
+import "@fontsource/space-mono/700.css";
+import spaceMono700Woff2 from "@fontsource/space-mono/files/space-mono-latin-700-normal.woff2?url";
+import { getImage } from "astro:assets";
+import logoImage from "../assets/brand/logo-1000.png";
+import Footer from "../components/Footer.astro";
+import { site } from "../data/site";
+import { localePath, resolveLocale, t } from "../i18n";
+import "../styles/global.css";
+
+interface Props {
+    readonly title: string;
+    readonly description: string;
+    readonly ogImage?: string;
+    readonly ogType?: "website" | "article";
+    readonly jsonLd?: object | object[];
+    readonly fullscreen?: boolean;
+    readonly hideFooter?: boolean;
+    /** Whether this page exists in both languages (controls hreflang + switcher). */
+    readonly translated?: boolean;
+}
+
+const {
+    title,
+    description,
+    ogImage,
+    ogType = "website",
+    jsonLd,
+    fullscreen = false,
+    hideFooter = false,
+    translated = true
+} = Astro.props;
+
+const locale = resolveLocale(Astro.currentLocale);
+const translations = t(locale);
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// path of this page without the locale prefix
+const basePath = Astro.url.pathname.replace(/^\/en(\/|$)/, "/");
+const alternateDe = new URL(basePath, Astro.site);
+const alternateEn = new URL(localePath("en", basePath), Astro.site);
+
+// where the language switcher in the footer leads
+const switchPath = translated
+    ? locale === "de"
+        ? localePath("en", basePath)
+        : basePath
+    : locale === "de"
+      ? "/en/"
+      : "/";
+
+const favicon32 = await getImage({ src: logoImage, width: 32, height: 32, format: "png" });
+const favicon192 = await getImage({ src: logoImage, width: 192, height: 192, format: "png" });
+const appleTouchIcon = await getImage({ src: logoImage, width: 180, height: 180, format: "png" });
+const defaultOgImage = await getImage({ src: logoImage, width: 1000, format: "png" });
+
+const ogImageUrl = new URL(ogImage ?? defaultOgImage.src, Astro.site);
+
+const jsonLdBlocks = jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+---
+
+<!doctype html>
+<html lang={locale}>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonical} />
+        {
+            translated && (
+                <>
+                    <link rel="alternate" hreflang="de" href={alternateDe} />
+                    <link rel="alternate" hreflang="en" href={alternateEn} />
+                    <link rel="alternate" hreflang="x-default" href={alternateDe} />
+                </>
+            )
+        }
+        <link rel="sitemap" href="/sitemap-index.xml" />
+        <link rel="icon" type="image/png" sizes="32x32" href={favicon32.src} />
+        <link rel="icon" type="image/png" sizes="192x192" href={favicon192.src} />
+        <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIcon.src} />
+        <meta name="theme-color" content="#060607" />
+
+        <meta property="og:site_name" content={site.name} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content={ogType} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:locale" content={translations.ogLocale} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
+
+        <link rel="preload" href={spaceMono700Woff2} as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href={spaceMono400Woff2} as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href={openSans400Woff2} as="font" type="font/woff2" crossorigin />
+
+        {
+            jsonLdBlocks.map((block) => (
+                <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />
+            ))
+        }
+    </head>
+    <body class="noise bg-ink text-paper min-h-screen font-sans">
+        <main class={fullscreen ? "h-dvh w-full" : ""}>
+            <slot />
+        </main>
+        {!fullscreen && !hideFooter && <Footer locale={locale} switchPath={switchPath} />}
+    </body>
+</html>

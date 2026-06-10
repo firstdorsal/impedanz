@@ -1,0 +1,36 @@
+---
+import { t } from "../i18n";
+import Layout from "../layouts/Layout.astro";
+
+// The 404 page is served for any unknown path, including /en/* —
+// so it carries both languages.
+const de = t("de");
+const en = t("en");
+---
+
+<Layout title={de.notFoundTitle} description={de.notFoundText} translated={false}>
+    <section class="flex min-h-dvh flex-col items-start justify-center gap-6 p-4 md:p-8">
+        <span class="text-dim font-mono text-sm lowercase">fehler / error 404</span>
+        <h1 class="font-mono text-5xl font-bold lowercase md:text-8xl">
+            {de.notFoundHeading}<span class="text-acid animate-blink">_</span>
+        </h1>
+        <p class="text-dim max-w-prose">
+            {de.notFoundText}<br />
+            <span class="text-dim/70">{en.notFoundText}</span>
+        </p>
+        <div class="flex flex-wrap gap-4">
+            <a
+                href="/"
+                class="bg-acid text-ink hover:bg-paper px-6 py-3 font-mono text-sm font-bold lowercase transition-colors"
+            >
+                {de.notFoundBack}
+            </a>
+            <a
+                href="/en/"
+                class="border-line hover:border-acid hover:text-acid border px-6 py-3 font-mono text-sm lowercase transition-colors"
+            >
+                {en.notFoundBack}
+            </a>
+        </div>
+    </section>
+</Layout>

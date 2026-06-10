@@ -1,0 +1,215 @@
+---
+import { getImage, Image } from "astro:assets";
+import Acts from "../components/Acts.astro";
+import { site } from "../data/site";
+import type { ImpedanzEvent } from "../data/types";
+import type { Locale } from "../i18n";
+import { localePath, t } from "../i18n";
+import Layout from "../layouts/Layout.astro";
+import { seriesIndex } from "../lib/events";
+import { formatCoordinates, formatRange, formatTime } from "../lib/format";
+import { musicEventSchema } from "../lib/jsonld";
+
+interface Props {
+    readonly event: ImpedanzEvent;
+    readonly locale: Locale;
+}
+
+const { event, locale } = Astro.props;
+const translations = t(locale);
+
+const isPast = event.dateTimeEnd.getTime() < Date.now();
+const year = new Date().getFullYear();
+
+// OG images must be a stable, widely supported format — JPEG, not AVIF.
+const ogImage = event.image
+    ? (await getImage({ src: event.image, width: 1080, format: "jpeg" })).src
+    : undefined;
+
+const description = event.description
+    ? event.description.split("\n")[0]!
+    : translations.eventMetaDescription(event.title, event.location.name, event.genre);
+
+const osmUrl = `https://www.openstreetmap.org/?mlat=${event.location.latitude}&mlon=${event.location.longitude}#map=17/${event.location.latitude}/${event.location.longitude}`;
+const googleMapsUrl = `https://www.google.com/maps/place/${event.location.latitude},${event.location.longitude}`;
+---
+
+<Layout
+    title={`${event.title} — IMPEDANZ`}
+    description={description}
+    ogImage={ogImage}
+    ogType="article"
+    jsonLd={musicEventSchema(event, ogImage ? new URL(ogImage, Astro.site).href : undefined)}
+    hideFooter
+>
+    {/* on md+ the article is exactly one viewport tall — no page scroll */}
+    <article class="flex flex-col md:h-dvh">
+        <div
+            class="border-line flex shrink-0 items-center justify-between border-b px-4 py-3 md:px-8"
+        >
+            <a
+                href={localePath(locale, "/") + "#events"}
+                class="text-dim hover:text-acid font-mono text-sm lowercase transition-colors"
+            >
+                {translations.eventAllEvents}
+            </a>
+            <span class="text-dim font-mono text-xs lowercase">
+                {seriesIndex(event)}{isPast && translations.eventArchived}
+            </span>
+        </div>
+
+        <div class="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-2">
+            {/* artwork: absolutely positioned so it never stretches the row */}
+            {
+                event.image && (
+                    <div class="border-line relative aspect-square md:order-2 md:aspect-auto md:border-l">
+                        <Image
+                            src={event.image}
+                            alt={event.imageAlt ?? event.title}
+                            widths={[480, 800, 1080]}
+                            sizes="(min-width: 768px) 50vw, 100vw"
+                            loading="eager"
+                            class:list={[
+                                "absolute inset-0 h-full w-full object-cover",
+                                isPast && "grayscale-[0.4]"
+                            ]}
+                        />
+                        {isPast && (
+                            <span class="bg-ink/80 text-dim absolute top-4 right-4 px-3 py-1 font-mono text-xs lowercase backdrop-blur-sm">
+                                {translations.eventArchivedBadge}
+                            </span>
+                        )}
+                    </div>
+                )
+            }
+
+            {/* data sheet */}
+            <div class="flex min-h-0 flex-col overflow-y-auto md:order-1">
+                <div class="border-line border-b p-4 md:p-8">
+                    <h1 class="font-mono text-6xl font-bold lowercase md:text-7xl">
+                        {event.title}<span class="text-acid">.</span>
+                    </h1>
+                </div>
+
+                {
+                    event.description && (
+                        <p class="border-line text-paper/90 max-w-prose border-b p-4 leading-relaxed whitespace-pre-line md:px-8 md:py-6">
+                            {event.description}
+                        </p>
+                    )
+                }
+
+                <dl class="font-mono text-sm lowercase">
+                    <div
+                        class="border-line grid grid-cols-[7rem_1fr] gap-4 border-b px-4 py-3 md:px-8"
+                    >
+                        <dt class="text-dim">{translations.eventDate}</dt>
+                        <dd>{formatRange(event.dateTimeStart, event.dateTimeEnd, locale)}</dd>
+                    </div>
+                    <div
+                        class="border-line grid grid-cols-[7rem_1fr] gap-4 border-b px-4 py-3 md:px-8"
+                    >
+                        <dt class="text-dim">{translations.eventDoors}</dt>
+                        <dd>
+                            {formatTime(event.dateTimeStart, locale)} · {
+                                event.ageRestriction ?? translations.eventNoAgeRestriction
+                            }
+                        </dd>
+                    </div>
+                    <div
+                        class="border-line grid grid-cols-[7rem_1fr] gap-4 border-b px-4 py-3 md:px-8"
+                    >
+                        <dt class="text-dim">{translations.eventLocation}</dt>
+                        <dd class="flex flex-col gap-1">
+                            <span>{event.location.name} · {event.location.city}</span>
+                            <span class="text-dim text-xs">
+                                {
+                                    formatCoordinates(
+                                        event.location.latitude,
+                                        event.location.longitude
+                                    )
+                                }
+                                · <a
+                                    href={osmUrl}
+                                    rel="noreferrer"
+                                    target="_blank"
+                                    class="hover:text-acid underline underline-offset-4 transition-colors"
+                                    >osm</a
+                                >
+                                · <a
+                                    href={googleMapsUrl}
+                                    rel="noreferrer"
+                                    target="_blank"
+                                    class="hover:text-acid underline underline-offset-4 transition-colors"
+                                    >google maps</a
+                                >
+                                · <a
+                                    href={`geo:${event.location.latitude},${event.location.longitude}`}
+                                    class="hover:text-acid underline underline-offset-4 transition-colors"
+                                    >geo</a
+                                >
+                            </span>
+                        </dd>
+                    </div>
+                    <div
+                        class="border-line grid grid-cols-[7rem_1fr] gap-4 border-b px-4 py-3 md:px-8"
+                    >
+                        <dt class="text-dim">{translations.eventGenre}</dt>
+                        <dd>{event.genre}</dd>
+                    </div>
+                    {
+                        event.acts.length > 0 && (
+                            <div class="border-line grid grid-cols-[7rem_1fr] gap-4 border-b px-4 py-3 md:px-8">
+                                <dt class="text-dim">{translations.eventActs}</dt>
+                                <dd>
+                                    <Acts acts={event.acts} compact />
+                                </dd>
+                            </div>
+                        )
+                    }
+                </dl>
+
+                <div class="flex flex-wrap gap-4 p-4 font-mono text-sm lowercase md:px-8 md:py-6">
+                    {
+                        event.ticketLink && !isPast && (
+                            <a
+                                href={event.ticketLink}
+                                rel="noreferrer"
+                                target="_blank"
+                                class="bg-acid text-ink hover:bg-paper px-5 py-2.5 font-bold transition-colors"
+                            >
+                                {translations.eventTickets}
+                            </a>
+                        )
+                    }
+                    <a
+                        href={`/events/${event.slug}.ics`}
+                        class="border-line hover:border-acid hover:text-acid border px-5 py-2.5 transition-colors"
+                        title={translations.eventIcalTitle}
+                    >
+                        + ical
+                    </a>
+                </div>
+
+                {/* mini footer keeps legal links reachable without page scroll */}
+                <div
+                    class="border-line text-dim mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-4 py-3 font-mono text-xs lowercase md:px-8"
+                >
+                    <span>© {year} impedanz</span>
+                    <a href={site.legalUrl} class="hover:text-acid transition-colors">
+                        {translations.footerLegal}
+                    </a>
+                    <a href={site.privacyUrl} class="hover:text-acid transition-colors">
+                        {translations.footerPrivacy}
+                    </a>
+                    <a
+                        href={localePath(locale === "de" ? "en" : "de", `/events/${event.slug}/`)}
+                        class="text-acid hover:text-paper transition-colors"
+                    >
+                        [ {translations.languageSwitch} ]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </article>
+</Layout>

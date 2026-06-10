@@ -1,0 +1,72 @@
+---
+import { site } from "../data/site";
+import type { Locale } from "../i18n";
+import { localePath, t } from "../i18n";
+import { formatCoordinates } from "../lib/format";
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+    readonly locale: Locale;
+    readonly switchPath: string;
+}
+
+const { locale, switchPath } = Astro.props;
+const translations = t(locale);
+const year = new Date().getFullYear();
+const home = (anchor: string) => localePath(locale, "/") + anchor;
+---
+
+<footer class="border-line border-t">
+    <div class="grid grid-cols-1 md:grid-cols-3">
+        <div class="border-line flex flex-col gap-4 p-6 md:border-r">
+            <Wordmark class="text-paper h-5 w-auto max-w-[220px]" />
+            <p class="text-dim font-mono text-xs lowercase">
+                {translations.tagline}<br />
+                {formatCoordinates(site.coordinates.latitude, site.coordinates.longitude)}
+            </p>
+        </div>
+        <nav
+            aria-label="Footer"
+            class="border-line flex flex-col gap-2 p-6 font-mono text-sm lowercase md:border-r"
+        >
+            <a href={home("#events")} class="hover:text-acid w-fit transition-colors">events</a>
+            <a href={home("#kollektiv")} class="hover:text-acid w-fit transition-colors">
+                {translations.collectiveTitle}
+            </a>
+            <a href={home("#awareness")} class="hover:text-acid w-fit transition-colors">
+                awareness
+            </a>
+            <a href={home("#booking")} class="hover:text-acid w-fit transition-colors">booking</a>
+            <a href="/visuals/" class="hover:text-acid w-fit transition-colors">visuals</a>
+        </nav>
+        <div class="flex flex-col gap-2 p-6 font-mono text-sm lowercase">
+            {
+                site.instagram && (
+                    <a
+                        href={`https://www.instagram.com/${site.instagram}/`}
+                        rel="noreferrer"
+                        target="_blank"
+                        class="hover:text-acid w-fit transition-colors"
+                    >
+                        instagram
+                    </a>
+                )
+            }
+            <a href={`mailto:${site.bookingEmail}`} class="hover:text-acid w-fit transition-colors">
+                {site.bookingEmail}
+            </a>
+            <a href={site.legalUrl} class="hover:text-acid w-fit transition-colors">
+                {translations.footerLegal}
+            </a>
+            <a href={site.privacyUrl} class="hover:text-acid w-fit transition-colors">
+                {translations.footerPrivacy}
+            </a>
+            <a href={switchPath} class="text-acid hover:text-paper w-fit transition-colors">
+                [ {translations.languageSwitch} ]
+            </a>
+        </div>
+    </div>
+    <div class="border-line text-dim border-t px-6 py-3 font-mono text-xs lowercase">
+        © {year} impedanz · augsburg
+    </div>
+</footer>

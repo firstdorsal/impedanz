@@ -1,0 +1,76 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import { site } from "../data/site";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+    title="Impressum — IMPEDANZ"
+    description="Impressum von impedanz.net — Anbieterkennzeichnung und verantwortliche Person des IMPEDANZ Techno-Kollektivs aus Augsburg."
+    translated={false}
+>
+    <SectionHeading index="§5" title="impressum" />
+    <div class="flex flex-col gap-8 p-4 md:max-w-3xl md:p-8">
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">angaben gemäß § 5 ddg</h2>
+            <p class="text-paper/90 leading-relaxed">
+                {site.legalContact.name}<br />
+                {site.legalContact.street}<br />
+                {site.legalContact.city}<br />
+                {site.legalContact.country}
+            </p>
+        </section>
+
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">kontakt</h2>
+            <p class="text-paper/90 leading-relaxed">
+                E-Mail:{" "}
+                <a
+                    href={`mailto:${site.bookingEmail}`}
+                    class="hover:text-acid underline underline-offset-4 transition-colors"
+                >
+                    {site.bookingEmail}
+                </a>
+            </p>
+        </section>
+
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">verantwortlich für den inhalt</h2>
+            <p class="text-paper/90 leading-relaxed">
+                {site.legalContact.name}, Anschrift wie oben.
+            </p>
+        </section>
+
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">haftung für inhalte</h2>
+            <p class="text-dim leading-relaxed">
+                Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten nach den
+                allgemeinen Gesetzen verantwortlich. Wir sind jedoch nicht verpflichtet,
+                übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach
+                Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.
+            </p>
+        </section>
+
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">haftung für links</h2>
+            <p class="text-dim leading-relaxed">
+                Unser Angebot enthält Links zu externen Websites Dritter (z.&nbsp;B. Instagram,
+                Ticketshops, Kartendienste), auf deren Inhalte wir keinen Einfluss haben. Für diese
+                fremden Inhalte ist stets der jeweilige Anbieter oder Betreiber verantwortlich. Zum
+                Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar; bei Bekanntwerden von
+                Rechtsverletzungen entfernen wir derartige Links umgehend.
+            </p>
+        </section>
+
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">urheberrecht</h2>
+            <p class="text-dim leading-relaxed">
+                Die durch uns erstellten Inhalte und Werke auf diesen Seiten unterliegen dem
+                deutschen Urheberrecht. Vervielfältigung, Bearbeitung und Verbreitung außerhalb der
+                Grenzen des Urheberrechts bedürfen unserer schriftlichen Zustimmung. Event-Artworks
+                und Fotos Dritter sind entsprechend gekennzeichnet bzw. mit Zustimmung der
+                Urheber:innen eingebunden.
+            </p>
+        </section>
+    </div>
+</Layout>

@@ -1,0 +1,78 @@
+---
+import { Image } from "astro:assets";
+import type { ImpedanzEvent } from "../data/types";
+import type { Locale } from "../i18n";
+import { localePath, t } from "../i18n";
+import { seriesIndex } from "../lib/events";
+import { formatRange } from "../lib/format";
+import Acts from "./Acts.astro";
+
+// Large feature card for upcoming events.
+interface Props {
+    readonly event: ImpedanzEvent;
+    readonly locale: Locale;
+}
+
+const { event, locale } = Astro.props;
+const translations = t(locale);
+const href = localePath(locale, `/events/${event.slug}/`);
+---
+
+<article class="border-line group relative grid grid-cols-1 border-b md:grid-cols-2">
+    <div class="flex flex-col justify-between gap-8 p-4 md:p-8">
+        <div class="flex flex-col gap-4">
+            <span class="text-dim font-mono text-xs lowercase">{seriesIndex(event)}</span>
+            <h3 class="font-mono text-5xl font-bold lowercase md:text-7xl">
+                <a href={href} class="group-hover:text-acid transition-colors">
+                    {event.title}<span class="text-acid">.</span>
+                </a>
+            </h3>
+            <p class="font-mono text-sm lowercase">
+                {formatRange(event.dateTimeStart, event.dateTimeEnd, locale)}
+            </p>
+            <p class="text-dim font-mono text-sm lowercase">
+                {event.location.name} · {event.genre}
+            </p>
+        </div>
+        <div class="flex flex-col gap-6">
+            {event.acts.length > 0 && <Acts acts={event.acts} compact />}
+            <div class="flex flex-wrap gap-4 font-mono text-sm lowercase">
+                {
+                    event.ticketLink && (
+                        <a
+                            href={event.ticketLink}
+                            rel="noreferrer"
+                            target="_blank"
+                            class="bg-acid text-ink hover:bg-paper px-4 py-2 font-bold transition-colors"
+                        >
+                            {translations.eventTickets}
+                        </a>
+                    )
+                }
+                <a
+                    href={href}
+                    class="border-line hover:border-acid hover:text-acid border px-4 py-2 transition-colors"
+                >
+                    {translations.eventDetails}
+                </a>
+            </div>
+        </div>
+    </div>
+    {
+        event.image && (
+            <a
+                href={href}
+                class="border-line relative block overflow-hidden md:border-l"
+                aria-label={event.title}
+            >
+                <Image
+                    src={event.image}
+                    alt={event.imageAlt ?? event.title}
+                    widths={[480, 800, 1080]}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+            </a>
+        )
+    }
+</article>

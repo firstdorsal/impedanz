@@ -1,0 +1,45 @@
+---
+import { Image } from "astro:assets";
+import type { ImpedanzEvent } from "../data/types";
+import type { Locale } from "../i18n";
+import { localePath } from "../i18n";
+import { seriesIndex } from "../lib/events";
+import { formatDate } from "../lib/format";
+
+// Compact archive row, styled like a measurement log entry.
+interface Props {
+    readonly event: ImpedanzEvent;
+    readonly locale: Locale;
+}
+
+const { event, locale } = Astro.props;
+---
+
+<a
+    href={localePath(locale, `/events/${event.slug}/`)}
+    class="border-line hover:bg-panel group grid grid-cols-[auto_1fr_auto] items-center gap-4 border-b px-4 py-3 transition-colors md:grid-cols-[6rem_4rem_1fr_10rem_14rem_2rem] md:px-8"
+>
+    <span class="text-dim font-mono text-xs lowercase">{seriesIndex(event)}</span>
+    {
+        event.image && (
+            <Image
+                src={event.image}
+                alt={event.imageAlt ?? event.title}
+                widths={[64, 128]}
+                sizes="64px"
+                class="border-line hidden size-12 border object-cover grayscale transition-all group-hover:grayscale-0 md:block"
+            />
+        )
+    }
+    <span
+        class="group-hover:text-acid font-mono text-lg font-bold lowercase transition-colors md:text-2xl"
+    >
+        {event.title}
+    </span>
+    <span class="font-mono text-sm lowercase">{formatDate(event.dateTimeStart, locale)}</span>
+    <span class="text-dim hidden font-mono text-sm lowercase md:block">{event.location.name}</span>
+    <span
+        class="text-acid hidden text-right opacity-0 transition-opacity group-hover:opacity-100 md:block"
+        aria-hidden="true">→</span
+    >
+</a>

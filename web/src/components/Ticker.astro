@@ -1,0 +1,17 @@
+---
+interface Props {
+    readonly items: string[];
+}
+
+const { items } = Astro.props;
+const line = items.join(" — ") + " — ";
+---
+
+<div class="border-line bg-ink relative overflow-hidden border-y" aria-hidden="true">
+    <div
+        class="animate-marquee flex w-max py-2 font-mono text-sm lowercase hover:[animation-play-state:paused]"
+    >
+        <span class="text-dim whitespace-pre">{line}</span>
+        <span class="text-dim whitespace-pre">{line}</span>
+    </div>
+</div>

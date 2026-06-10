@@ -1,0 +1,73 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import { site } from "../data/site";
+import Layout from "../layouts/Layout.astro";
+
+const sections = [
+    {
+        title: "kurzfassung",
+        text: "Diese Website setzt keine Cookies, benutzt kein Tracking und keine Analyse-Tools. Alle Ressourcen — Schriften, Bilder, Skripte — werden von unserem eigenen Server geladen, es werden keine Inhalte von Drittanbietern eingebunden. Beim bloßen Besuch der Seite werden keine personenbezogenen Daten dauerhaft gespeichert."
+    },
+    {
+        title: "hosting & server-logs",
+        text: "Die Website wird auf einem von uns betriebenen Server gehostet. Die zur Auslieferung der Seite technisch notwendige Verarbeitung von Verbindungsdaten (z. B. IP-Adresse) erfolgt nur flüchtig im Arbeitsspeicher und auf Grundlage unseres berechtigten Interesses an einem sicheren und funktionierenden Betrieb (Art. 6 Abs. 1 lit. f DSGVO). Es werden keine Logfiles mit IP-Adressen gespeichert."
+    },
+    {
+        title: "verschlüsselung",
+        text: "Die gesamte Kommunikation mit dieser Website ist per TLS verschlüsselt."
+    },
+    {
+        title: "mikrofon auf der visuals-seite",
+        text: "Die Seite /visuals/ kann nach deiner ausdrücklichen Freigabe im Browser auf dein Mikrofon zugreifen, um die Visuals auf Musik reagieren zu lassen. Die Audiodaten werden ausschließlich lokal in deinem Browser verarbeitet und zu keinem Zeitpunkt an uns oder Dritte übertragen oder gespeichert."
+    },
+    {
+        title: "kontakt per e-mail",
+        text: "Wenn du uns per E-Mail schreibst (z. B. Booking- oder Awareness-Anliegen), verarbeiten wir deine Angaben ausschließlich zur Bearbeitung der Anfrage (Art. 6 Abs. 1 lit. b und f DSGVO). Die Daten werden gelöscht, sobald sie für die Bearbeitung nicht mehr erforderlich sind und keine gesetzlichen Aufbewahrungspflichten bestehen."
+    },
+    {
+        title: "externe links",
+        text: "Diese Website verlinkt auf externe Angebote wie Instagram, Ticketshops und Kartendienste (OpenStreetMap, Google Maps). Beim Aufruf dieser Links verlässt du unsere Website; es gelten die Datenschutzbestimmungen der jeweiligen Anbieter. Durch das bloße Anzeigen unserer Website werden keine Daten an diese Anbieter übertragen."
+    },
+    {
+        title: "deine rechte",
+        text: "Du hast nach der DSGVO das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21) sowie das Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77) — in Bayern ist das das Bayerische Landesamt für Datenschutzaufsicht (BayLDA)."
+    }
+];
+---
+
+<Layout
+    title="Datenschutz — IMPEDANZ"
+    description="Datenschutzerklärung von impedanz.net: keine Cookies, kein Tracking, keine Drittanbieter — und was mit deinen Daten passiert, wenn du uns schreibst."
+    translated={false}
+>
+    <SectionHeading index="ds" title="datenschutz" note="keine cookies, kein tracking" />
+    <div class="flex flex-col gap-8 p-4 md:max-w-3xl md:p-8">
+        <section class="flex flex-col gap-2">
+            <h2 class="font-mono text-xl font-bold lowercase">verantwortlicher</h2>
+            <p class="text-paper/90 leading-relaxed">
+                {site.legalContact.name}<br />
+                {site.legalContact.street}<br />
+                {site.legalContact.city}<br />
+                {site.legalContact.country}<br />
+                E-Mail:{" "}
+                <a
+                    href={`mailto:${site.bookingEmail}`}
+                    class="hover:text-acid underline underline-offset-4 transition-colors"
+                >
+                    {site.bookingEmail}
+                </a>
+            </p>
+        </section>
+
+        {
+            sections.map((section) => (
+                <section class="flex flex-col gap-2">
+                    <h2 class="font-mono text-xl font-bold lowercase">{section.title}</h2>
+                    <p class="text-dim leading-relaxed">{section.text}</p>
+                </section>
+            ))
+        }
+
+        <p class="text-dim font-mono text-xs lowercase">stand: juni 2026</p>
+    </div>
+</Layout>

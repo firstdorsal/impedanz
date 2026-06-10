@@ -1,0 +1,43 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+    title="Visuals — IMPEDANZ"
+    description="Mikrofonreaktive Echtzeit-Visuals des IMPEDANZ Techno-Kollektivs — WebGL, läuft direkt im Browser."
+    fullscreen
+    translated={false}
+>
+    <div id="canvasBox" class="relative h-full w-full bg-black"></div>
+    <a
+        href="/"
+        class="text-dim hover:text-acid fixed bottom-4 left-4 z-20 font-mono text-xs lowercase transition-colors"
+    >
+        ← impedanz
+    </a>
+</Layout>
+
+<script>
+    import * as THREE from "three";
+    import { BlendFunction } from "postprocessing";
+    import { BloomBoom } from "../scripts/bloom-boom";
+
+    // Same parameters the Preact version shipped with.
+    const visual = new BloomBoom({
+        geometryType: "icosahedron",
+        geometryPolygons: 5,
+        geometrySize: 6,
+        bloomColor: new THREE.Color(1, 0.41, 0),
+        bloomLuminanceThreshold: 0.1,
+        bloomIntensity: 100,
+        bloomLuminanceSmoothing: 2,
+        frequencyMultiplier: 0.84,
+        frequencyExponent: 1.3,
+        mipmapBlurRadius: 1.6,
+        bloomBlendFunction: BlendFunction.HARD_LIGHT,
+        mipmapBlurLevels: 2,
+        displayGUI: true
+    });
+
+    visual.mount(document.getElementById("canvasBox")!);
+</script>

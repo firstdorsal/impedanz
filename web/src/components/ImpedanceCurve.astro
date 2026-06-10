@@ -1,0 +1,52 @@
+---
+import { sampleImpedancePath } from "../lib/impedance-curve";
+
+// Static SVG fallback of the oscilloscope hero (noscript / reduced
+// motion). Sampled from the same curve function the canvas uses.
+interface Props {
+    readonly class?: string;
+    readonly [key: string]: unknown;
+}
+
+const { class: className, ...rest } = Astro.props;
+
+const points = sampleImpedancePath(1200, 300, 160);
+const path =
+    `M ${points[0]!.x.toFixed(1)} ${points[0]!.y.toFixed(1)} ` +
+    points
+        .slice(1)
+        .map((point) => `L ${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+        .join(" ");
+
+const gridX = [160, 320, 480, 640, 800, 960, 1120];
+const gridY = [75, 150, 225];
+---
+
+<svg
+    viewBox="0 0 1200 300"
+    xmlns="http://www.w3.org/2000/svg"
+    class={className}
+    role="img"
+    aria-label="Impedanzkurve eines Lautsprechers"
+    preserveAspectRatio="none"
+    {...rest}
+>
+    {
+        gridX.map((x) => (
+            <line x1={x} y1="0" x2={x} y2="300" stroke="var(--color-line)" stroke-width="1" />
+        ))
+    }
+    {
+        gridY.map((y) => (
+            <line x1="0" y1={y} x2="1200" y2={y} stroke="var(--color-line)" stroke-width="1" />
+        ))
+    }
+    <path
+        d={path}
+        fill="none"
+        stroke="var(--color-acid)"
+        stroke-width="2"
+        pathLength="2000"
+        stroke-dasharray="2000"
+        class="animate-trace [--trace-length:2000]"></path>
+</svg>

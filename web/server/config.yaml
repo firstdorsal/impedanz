@@ -1,0 +1,12 @@
+# impedanz-server configuration — this single file is mounted into the
+# container (or replaced via IMPEDANZ_CONFIG). Every value can also be
+# overridden through environment variables, see src/config.rs.
+
+# dual-stack listener: [::] keeps IPv6 first-class, IPv4 arrives mapped
+bind_address: "[::]:80"
+
+# directory with the static astro build
+public_dir: "/public"
+
+# tracing env-filter, e.g. "info" or "info,impedanz_server=debug,tower_http=debug"
+log_filter: "info"

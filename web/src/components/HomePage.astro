@@ -1,0 +1,243 @@
+---
+import { getImage } from "astro:assets";
+import logoImage from "../assets/brand/logo-1000.png";
+import AwarenessSection from "../components/AwarenessSection.astro";
+import EventCard from "../components/EventCard.astro";
+import EventRow from "../components/EventRow.astro";
+import ImpedanceCurve from "../components/ImpedanceCurve.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import Ticker from "../components/Ticker.astro";
+import Wordmark from "../components/Wordmark.astro";
+import { crew } from "../data/crew";
+import { site } from "../data/site";
+import type { Locale } from "../i18n";
+import { t } from "../i18n";
+import Layout from "../layouts/Layout.astro";
+import { pastEvents, regularArtists, upcomingEvents } from "../lib/events";
+import { formatCoordinates, formatDate } from "../lib/format";
+import { organizationSchema } from "../lib/jsonld";
+
+interface Props {
+    readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const translations = t(locale);
+
+const logo = await getImage({ src: logoImage, width: 1000, format: "png" });
+const regulars = regularArtists();
+
+const tickerItems = [
+    "impedanz",
+    translations.tickerCollective,
+    "hypnotic",
+    "minimal",
+    "hardgroove",
+    ...upcomingEvents.map(
+        (event) =>
+            `${event.title} · ${formatDate(event.dateTimeStart, locale)} · ${event.location.name}`
+    ),
+    translations.tickerClosing
+];
+
+const nextSeriesNumber = `za-${String(pastEvents.length + upcomingEvents.length + 1).padStart(3, "0")}`;
+---
+
+<Layout
+    title={translations.homeTitle}
+    description={translations.homeDescription}
+    jsonLd={organizationSchema(new URL(logo.src, Astro.site).href, locale)}
+>
+    {/* hero */}
+    <section data-scope class="relative flex min-h-dvh flex-col justify-end overflow-hidden">
+        <ImpedanceCurve
+            data-scope-fallback
+            class="pointer-events-none absolute inset-0 h-full w-full opacity-90"
+        />
+        <canvas
+            data-scope-canvas
+            class="pointer-events-none absolute inset-0 hidden h-full w-full opacity-90"
+            aria-hidden="true"></canvas>
+        <div class="relative z-10 flex flex-col gap-6 p-4 pb-8 md:p-8 md:pb-10">
+            <h1 class="sr-only">{translations.homeTitle}</h1>
+            <Wordmark class="text-paper h-auto w-full max-w-[1100px]" />
+            <div
+                class="text-dim flex flex-col gap-1 font-mono text-sm lowercase md:flex-row md:items-center md:gap-6"
+            >
+                <span class="text-paper">{translations.tagline}</span>
+                <span>
+                    {formatCoordinates(site.coordinates.latitude, site.coordinates.longitude)}
+                </span>
+                <span>est. 2025</span>
+                <span class="text-acid"
+                    >{
+                        upcomingEvents.length > 0
+                            ? `${translations.nextPrefix}: ${upcomingEvents[0]!.title} · ${formatDate(upcomingEvents[0]!.dateTimeStart, locale)}`
+                            : translations.nextTba
+                    }<span class="animate-blink">_</span></span
+                >
+            </div>
+        </div>
+        <Ticker items={tickerItems} />
+    </section>
+
+    <script>
+        import { mountOscilloscope } from "../scripts/oscilloscope";
+
+        mountOscilloscope();
+    </script>
+
+    {/* upcoming */}
+    <section aria-labelledby="events">
+        <SectionHeading
+            id="events"
+            index="01"
+            title={upcomingEvents.length > 0
+                ? translations.upcomingTitle
+                : translations.upcomingEmptyTitle}
+            note={translations.upcomingNote}
+        />
+        {upcomingEvents.map((event) => <EventCard event={event} locale={locale} />)}
+        {
+            upcomingEvents.length === 0 && (
+                <div class="hatch border-line border-b p-4 md:p-8">
+                    <div class="bg-ink border-line flex max-w-xl flex-col gap-3 border p-6">
+                        <span class="text-dim font-mono text-xs lowercase">{nextSeriesNumber}</span>
+                        <p class="font-mono text-3xl font-bold lowercase md:text-5xl">
+                            tba<span class="text-acid animate-blink">_</span>
+                        </p>
+                        <p class="text-dim text-sm">
+                            {translations.tbaText} {translations.tbaTextContact}{" "}
+                            <a
+                                href={`mailto:${site.bookingEmail}`}
+                                class="text-paper hover:text-acid underline underline-offset-4 transition-colors"
+                            >
+                                {site.bookingEmail}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            )
+        }
+    </section>
+
+    {/* archive */}
+    <section aria-labelledby="archiv">
+        <SectionHeading
+            id="archiv"
+            index="02"
+            title={translations.archiveTitle}
+            note={translations.archiveNote(pastEvents.length)}
+        />
+        <div>
+            {pastEvents.map((event) => <EventRow event={event} locale={locale} />)}
+        </div>
+    </section>
+
+    {/* kollektiv */}
+    <section aria-labelledby="kollektiv">
+        <SectionHeading
+            id="kollektiv"
+            index="03"
+            title={translations.collectiveTitle}
+            note={translations.collectiveNote}
+        />
+        <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="border-line flex flex-col gap-6 p-4 md:border-r md:p-8">
+                <p class="max-w-prose text-lg leading-relaxed">{translations.collectiveIntro}</p>
+                <p class="text-dim max-w-prose text-sm leading-relaxed">
+                    {translations.collectiveClaim}
+                </p>
+            </div>
+            <div class="flex flex-col">
+                <ul class="flex flex-col">
+                    {
+                        crew.map((member) => (
+                            <li class="border-line hover:bg-panel flex flex-col gap-1 border-b px-4 py-4 transition-colors md:flex-row md:items-baseline md:justify-between md:gap-4 md:px-8">
+                                <span class="font-mono text-2xl font-bold lowercase md:text-3xl">
+                                    {member.name}
+                                </span>
+                                <span class="text-dim font-mono text-xs lowercase md:text-sm">
+                                    {member.role}
+                                </span>
+                            </li>
+                        ))
+                    }
+                </ul>
+                {
+                    regulars.length > 0 && (
+                        <div class="flex flex-col gap-3 px-4 py-6 md:px-8">
+                            <span class="text-dim font-mono text-xs lowercase">
+                                {translations.regularsLabel}
+                            </span>
+                            <ul class="flex flex-wrap gap-2">
+                                {regulars.map((artist) => (
+                                    <li>
+                                        {artist.url ? (
+                                            <a
+                                                href={artist.url}
+                                                rel="noreferrer"
+                                                target="_blank"
+                                                class="border-line hover:border-acid hover:text-acid block border px-3 py-1 font-mono text-sm lowercase transition-colors"
+                                            >
+                                                {artist.name}
+                                            </a>
+                                        ) : (
+                                            <span class="border-line block border px-3 py-1 font-mono text-sm lowercase">
+                                                {artist.name}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </section>
+
+    {/* awareness */}
+    <AwarenessSection locale={locale} />
+
+    {/* booking cta */}
+    <section aria-labelledby="booking">
+        <SectionHeading
+            id="booking"
+            index="05"
+            title={translations.bookingTitle}
+            note={translations.bookingNote}
+        />
+        <div class="relative overflow-hidden p-4 py-16 md:p-8 md:py-24">
+            <div class="hatch-acid absolute inset-0 opacity-[0.06]" aria-hidden="true"></div>
+            <div class="relative z-10 flex flex-col gap-8">
+                <p
+                    class="max-w-4xl font-mono text-4xl leading-tight font-bold lowercase md:text-7xl"
+                >
+                    {translations.bookingHeadline}<span class="text-acid">?</span>
+                </p>
+                <p class="text-dim max-w-prose text-lg">{translations.bookingText}</p>
+                <div class="flex flex-wrap items-center gap-4 font-mono text-sm lowercase">
+                    <a
+                        href={`mailto:${site.bookingEmail}?subject=DJ%20Booking%20%E2%80%94%20IMPEDANZ`}
+                        class="bg-acid text-ink hover:bg-paper px-6 py-3 text-base font-bold transition-colors"
+                    >
+                        {translations.bookingCta}
+                    </a>
+                    {
+                        site.instagram && (
+                            <a
+                                href={`https://www.instagram.com/${site.instagram}/`}
+                                rel="noreferrer"
+                                target="_blank"
+                                class="border-line hover:border-acid hover:text-acid border px-6 py-3 transition-colors"
+                            >
+                                {translations.bookingInstagram}
+                            </a>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</Layout>
