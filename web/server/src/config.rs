@@ -9,15 +9,20 @@
 //! 3. environment variables
 //!
 //! Environment variables (each also supports the `_FILE` suffix
-//! convention: `IMPEDANZ_BIND_ADDRESS_FILE=/run/secrets/addr` reads the
-//! value from that file instead):
+//! convention: `IMPEDANZ_INITIAL_ADMIN_PASSWORD_FILE=/run/secrets/pw`
+//! reads the value from that file instead):
 //!
-//! | variable                 | default        | meaning                                  |
-//! |--------------------------|----------------|------------------------------------------|
-//! | `IMPEDANZ_CONFIG`        | `/config.yaml` | path to the YAML config file             |
-//! | `IMPEDANZ_BIND_ADDRESS`  | `[::]:80`      | dual-stack socket address to listen on   |
-//! | `IMPEDANZ_PUBLIC_DIR`    | `/public`      | directory with the static Astro build    |
-//! | `IMPEDANZ_LOG_FILTER`    | `info`         | tracing env-filter directive             |
+//! | variable                          | default              | meaning                                   |
+//! |-----------------------------------|----------------------|-------------------------------------------|
+//! | `IMPEDANZ_CONFIG`                 | `/config.yaml`       | path to the YAML config file              |
+//! | `IMPEDANZ_BIND_ADDRESS`           | `[::]:80`            | dual-stack socket address to listen on    |
+//! | `IMPEDANZ_PUBLIC_DIR`             | `/public`            | directory with the static Astro build     |
+//! | `IMPEDANZ_LOG_FILTER`             | `info`               | tracing env-filter directive              |
+//! | `IMPEDANZ_DATABASE_PATH`          | `/data/impedanz.db`  | SQLite database file                      |
+//! | `IMPEDANZ_MEDIA_DIR`              | `/data/media`        | uploaded event artwork storage            |
+//! | `IMPEDANZ_COOKIE_SECURE`          | `true`               | set the Secure flag on session cookies    |
+//! | `IMPEDANZ_INITIAL_ADMIN_USERNAME` | unset                | bootstrap admin (only used on empty DB)   |
+//! | `IMPEDANZ_INITIAL_ADMIN_PASSWORD` | unset                | bootstrap admin password                  |
 
 use serde::Deserialize;
 use std::net::SocketAddr;
@@ -47,6 +52,17 @@ pub enum ConfigError {
     InvalidValue { variable: String, message: String },
 }
 
+/// A string that must never end up in logs (passwords etc.).
+#[derive(Clone, Deserialize)]
+#[serde(transparent)]
+pub struct Secret(pub String);
+
+impl std::fmt::Debug for Secret {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("«redacted»")
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ServerConfig {
@@ -58,6 +74,17 @@ pub struct ServerConfig {
     /// Directive for `tracing_subscriber::EnvFilter`, e.g.
     /// `info` or `info,impedanz_server=debug`.
     pub log_filter: String,
+    /// SQLite database file (created on first start).
+    pub database_path: PathBuf,
+    /// Directory for uploaded event artwork, served under /media/.
+    pub media_dir: PathBuf,
+    /// Whether session cookies carry the Secure flag. Disable only for
+    /// plain-http local development.
+    pub cookie_secure: bool,
+    /// Bootstrap admin account, created only when the users table is
+    /// empty. Prefer the environment variables for the password.
+    pub initial_admin_username: Option<String>,
+    pub initial_admin_password: Option<Secret>,
 }
 
 impl Default for ServerConfig {
@@ -66,6 +93,11 @@ impl Default for ServerConfig {
             bind_address: "[::]:80".parse().expect("static address is valid"),
             public_dir: PathBuf::from("/public"),
             log_filter: String::from("info"),
+            database_path: PathBuf::from("/data/impedanz.db"),
+            media_dir: PathBuf::from("/data/media"),
+            cookie_secure: true,
+            initial_admin_username: None,
+            initial_admin_password: None,
         }
     }
 }
@@ -108,6 +140,30 @@ impl ServerConfig {
         }
         if let Some(value) = read_env("IMPEDANZ_LOG_FILTER")? {
             config.log_filter = value;
+        }
+        if let Some(value) = read_env("IMPEDANZ_DATABASE_PATH")? {
+            config.database_path = PathBuf::from(value);
+        }
+        if let Some(value) = read_env("IMPEDANZ_MEDIA_DIR")? {
+            config.media_dir = PathBuf::from(value);
+        }
+        if let Some(value) = read_env("IMPEDANZ_COOKIE_SECURE")? {
+            config.cookie_secure = match value.as_str() {
+                "true" | "1" => true,
+                "false" | "0" => false,
+                other => {
+                    return Err(ConfigError::InvalidValue {
+                        variable: String::from("IMPEDANZ_COOKIE_SECURE"),
+                        message: format!("expected true/false, got {other:?}"),
+                    })
+                }
+            };
+        }
+        if let Some(value) = read_env("IMPEDANZ_INITIAL_ADMIN_USERNAME")? {
+            config.initial_admin_username = Some(value);
+        }
+        if let Some(value) = read_env("IMPEDANZ_INITIAL_ADMIN_PASSWORD")? {
+            config.initial_admin_password = Some(Secret(value));
         }
 
         Ok(config)

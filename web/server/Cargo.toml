@@ -1,6 +1,6 @@
 [package]
 name = "impedanz-server"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 description = "Serves the static impedanz.net site and hosts the IMPEDANZ API"
 license = "AGPL-3.0-or-later"

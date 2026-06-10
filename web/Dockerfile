@@ -11,8 +11,8 @@ COPY . .
 RUN pnpm build
 
 # 1. server build stage — static musl binary
-# pinned like the other mows services; floating tags break reproducibility
-FROM clux/muslrust:1.92.0-stable AS server-build
+# pinned: floating tags break reproducibility; >=1.94 required by sqlx 0.9
+FROM clux/muslrust:1.96.0-stable AS server-build
 RUN apt-get update && apt-get install -y --no-install-recommends upx-ucl && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY server/ ./
