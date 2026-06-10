@@ -1,0 +1,20 @@
+---
+import EventDetailPage from "../../../../components/EventDetailPage.astro";
+import { events } from "../../../../data/events";
+import type { ImpedanzEvent } from "../../../../data/types";
+
+export function getStaticPaths() {
+    return events.map((event) => ({
+        params: { slug: event.slug },
+        props: { event }
+    }));
+}
+
+interface Props {
+    readonly event: ImpedanzEvent;
+}
+
+const { event } = Astro.props;
+---
+
+<EventDetailPage event={event} locale="en" />

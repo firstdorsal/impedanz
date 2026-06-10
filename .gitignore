@@ -1,6 +1,6 @@
-video/
-print/
-events/
-logo/
-.plans/
+/video/
+/print/
+/events/
+/logo/
+/.plans/
 *.ods
