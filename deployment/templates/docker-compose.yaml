@@ -1,5 +1,4 @@
 {{- $webHostname := mowsJoinDomain .services.web.subdomain (ternary "localhost" .domain (eq .routing "local")) -}}
-{{- $mattermostHostname := mowsJoinDomain .services.mattermost.subdomain (ternary "localhost" .domain (eq .routing "local")) -}}
 
 services:
     web:
@@ -12,6 +11,14 @@ services:
         {{- end }}
         container_name: impedanz-web
         restart: unless-stopped
+        environment:
+            # bootstrap admin for the member API — only used while the
+            # users table is empty, harmless afterwards
+            - IMPEDANZ_INITIAL_ADMIN_USERNAME=${IMPEDANZ_INITIAL_ADMIN_USERNAME:-}
+            - IMPEDANZ_INITIAL_ADMIN_PASSWORD=${IMPEDANZ_INITIAL_ADMIN_PASSWORD:-}
+        volumes:
+            # sqlite database + uploaded event artwork
+            - {{ .services.web.volume.value }}:/data
         networks:
             - {{ .reverseProxy.network }}
         labels:
@@ -58,89 +65,6 @@ services:
                                 server:
                                     port: "80"
 
-    {{- if eq .services.postgres.enabled true }}
-    impedanz-mattermost-postgres:
-        image: "{{ .services.postgres.image }}"
-        container_name: impedanz-mattermost-postgres
-        restart: unless-stopped
-        environment:
-            - POSTGRES_USER=${POSTGRES_USER}
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            - POSTGRES_DB=mattermost
-        volumes:
-            - {{ .services.postgres.volume.value }}:/var/lib/postgresql/data
-        networks:
-            - impedanz-mattermost-internal
-        healthcheck:
-            test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "mattermost"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-    {{- end }}
-
-    {{- if eq .services.mattermost.enabled true }}
-    mattermost:
-        image: "{{ .services.mattermost.image }}"
-        container_name: impedanz-mattermost
-        restart: unless-stopped
-        depends_on:
-            impedanz-mattermost-postgres:
-                condition: service_healthy
-        environment:
-            - TZ=Europe/Berlin
-            - MM_SQLSETTINGS_DRIVERNAME=postgres
-            - MM_SQLSETTINGS_DATASOURCE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@impedanz-mattermost-postgres:5432/mattermost?sslmode=disable&connect_timeout=10
-            - MM_BLEVESETTINGS_INDEXDIR=/mattermost/bleve-indexes
-            - MM_SERVICESETTINGS_SITEURL={{ ternary "https://" "http://" .tls }}{{ $mattermostHostname }}
-            - MM_EMAILSETTINGS_SMTPSERVER=${MM_SMTP_SERVER}
-            - MM_EMAILSETTINGS_SMTPPORT=${MM_SMTP_PORT}
-            - MM_EMAILSETTINGS_SMTPUSERNAME=${MM_SMTP_USERNAME}
-            - MM_EMAILSETTINGS_SMTPPASSWORD=${MM_SMTP_PASSWORD}
-            - MM_EMAILSETTINGS_ENABLESMTPAUTH=${MM_SMTP_AUTH}
-            - MM_EMAILSETTINGS_CONNECTIONSECURITY=${MM_SMTP_SECURITY}
-            - MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS=${MM_SMTP_ENABLED}
-            - MM_EMAILSETTINGS_REQUIREEMAILVERIFICATION=true
-            - MM_EMAILSETTINGS_FEEDBACKEMAIL=${MM_SMTP_DISPLAY_EMAIL}
-            - MM_EMAILSETTINGS_FEEDBACKNAME=${MM_SMTP_DISPLAY_NAME}
-            - MM_LOGSETTINGS_ENABLEDIAGNOSTICS=false
-            - MM_LOGSETTINGS_ENABLESENTRY=false
-            - MM_SERVICESETTINGS_ENABLESECURITYFIXALERT=false
-            - MM_SERVICESETTINGS_ENABLELINKPREVIEWS=false
-            - MM_PLUGINSETTINGS_ENABLEUPLOADS=true
-        volumes:
-            - {{ .services.mattermost.volume.value }}:/mattermost
-        networks:
-            - {{ .reverseProxy.network }}
-            - impedanz-mattermost-internal
-        labels:
-            com:
-                centurylinklabs:
-                    watchtower:
-                        enable: true
-            traefik:
-                docker:
-                    network: {{ .reverseProxy.network }}
-                enable: true
-                http:
-                    routers:
-                        impedanz-mattermost:
-                            rule: "Host(`{{ $mattermostHostname }}`)"
-                            entrypoints: {{ ternary "websecure" "web" .tls }}
-                            service: impedanz-mattermost
-                            {{- if eq .tls true }}
-                            tls:
-                                certresolver: "default"
-                                domains:
-                                    - main: "{{ .domain }}"
-                                      sans: "*.{{ .domain }}"
-                            {{- end }}
-                    services:
-                        impedanz-mattermost:
-                            loadbalancer:
-                                server:
-                                    port: "8065"
-    {{- end }}
-
     {{- if eq .reverseProxy.create true }}
     traefik:
         image: traefik:v3
@@ -157,14 +81,9 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock:ro
     {{- end }}
 
-{{- if or (eq .services.postgres.volume.type "volume") (eq .services.mattermost.volume.type "volume") }}
+{{- if eq .services.web.volume.type "volume" }}
 volumes:
-    {{- if eq .services.postgres.volume.type "volume" }}
-    {{ .services.postgres.volume.value }}:
-    {{- end }}
-    {{- if eq .services.mattermost.volume.type "volume" }}
-    {{ .services.mattermost.volume.value }}:
-    {{- end }}
+    {{ .services.web.volume.value }}:
 {{- end }}
 
 networks:
@@ -174,4 +93,3 @@ networks:
         {{- else }}
         name: {{ .reverseProxy.network }}
         {{- end }}
-    impedanz-mattermost-internal:

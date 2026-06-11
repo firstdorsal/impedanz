@@ -1,36 +1,16 @@
 manifestVersion: "0.1"
 metadata:
     name: impedanz
-    description: ""
-    version: "0.3"
+    description: "impedanz.net — static site + member API served by impedanz-server"
+    version: "0.5"
 spec:
     compose:
-        valuesFilePath: values/development.yaml
         providedSecrets:
-            MM_SMTP_SERVER:
+            # bootstrap admin for the impedanz member API (web service);
+            # only consumed while the users table is empty
+            IMPEDANZ_INITIAL_ADMIN_USERNAME:
+                default: paul
+                optional: false
+            IMPEDANZ_INITIAL_ADMIN_PASSWORD:
                 default: null
-                optional: false
-            MM_SMTP_PORT:
-                default: 465
-                optional: false
-            MM_SMTP_USERNAME:
-                default: no-reply@example.com
-                optional: false
-            MM_SMTP_PASSWORD:
-                default: null
-                optional: false
-            MM_SMTP_AUTH:
-                default: true
-                optional: false
-            MM_SMTP_SECURITY:
-                default: TLS
-                optional: false
-            MM_SMTP_ENABLED:
-                default: true
-                optional: false
-            MM_SMTP_DISPLAY_EMAIL:
-                default: no-reply@example.com
-                optional: false
-            MM_SMTP_DISPLAY_NAME:
-                default: Example Mattermost
                 optional: false

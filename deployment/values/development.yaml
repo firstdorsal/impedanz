@@ -15,16 +15,7 @@ services:
             context: ../../web
             dockerfile: Dockerfile
         image: ghcr.io/firstdorsal/impedanz-web
-    mattermost:
-        enabled: true
-        subdomain: mattermost
-        image: mattermost/mattermost-team-edition:latest
         volume:
+            # sqlite database + uploaded event artwork of the member api
             type: volume
-            value: impedanz-mattermost-dev
-    postgres:
-        enabled: true
-        image: postgres:18-alpine
-        volume:
-            type: volume
-            value: impedanz-mattermost-postgres-dev
+            value: impedanz-web-data-dev
