@@ -15,9 +15,39 @@ optimierte Bilder.
 - Three.js + postprocessing für die `/visuals/`-Seite
 - [`server/`](server/): Rust/Axum-Backend (`impedanz-server`), serviert
   `dist/` mit CSP/HSTS/Caching/Kompression (gzip, deflate, br, zstd),
-  dual-stack auf `[::]:80`. API-Fundament mit utoipa/OpenAPI:
-  `/api/health`, `/api/openapi.json`, Swagger UI unter `/api/docs`.
-  Hier entsteht die Mitglieder-API zum Veröffentlichen von Events.
+  dual-stack auf `[::]:80`, plus die Mitglieder-API (SQLite, utoipa/
+  OpenAPI, Swagger UI unter `/api/docs`).
+
+## Mitglieder-API
+
+Login mit Benutzername/Passwort (argon2id, Server-Sessions per
+HttpOnly-Cookie), zwei Rollen: `admin` (Benutzerverwaltung, Löschen)
+und `member` (Events anlegen/bearbeiten, Artwork hochladen).
+
+| Endpoint                          | Wer      | Was                                        |
+| --------------------------------- | -------- | ------------------------------------------ |
+| `POST /api/auth/login`            | alle     | Login, setzt Session-Cookie                |
+| `POST /api/auth/logout`           | Session  | Session beenden                            |
+| `GET /api/auth/me`                | Session  | Eigener Account                            |
+| `PUT /api/auth/password`          | Session  | Eigenes Passwort ändern                    |
+| `GET /api/events`                 | alle     | Veröffentlichte Events (`?includeUnpublished=true` mit Session) |
+| `GET /api/events/{slug}`          | alle     | Einzelnes Event (Drafts nur mit Session)   |
+| `POST /api/events`                | member+  | Event anlegen (Draft via `published:false`)|
+| `PUT /api/events/{slug}`          | member+  | Event bearbeiten                           |
+| `DELETE /api/events/{slug}`       | admin    | Event löschen                              |
+| `POST /api/media`                 | member+  | Artwork-Upload (jpeg/png/webp/avif)        |
+| `GET/POST /api/users`, `PUT/DELETE /api/users/{id}` | admin | Benutzerverwaltung   |
+
+Der erste Admin entsteht beim Start aus
+`IMPEDANZ_INITIAL_ADMIN_USERNAME`/`_PASSWORD` (nur solange die
+Users-Tabelle leer ist). Daten liegen in SQLite + `/data/media`
+(Volume `impedanz-web-data`). Die fünf bisherigen Events sind als
+Seed-Migration enthalten — die Datenbank ist damit die vollständige
+Eventhistorie. Tests: `cargo test` in `server/`.
+
+Hinweis: Die statischen Event-Seiten der Website bauen weiterhin aus
+`src/data/events.ts`; die Anbindung des Site-Builds an die API
+(Veröffentlichen ohne Release) ist der nächste geplante Schritt.
 
 ## Entwicklung
 

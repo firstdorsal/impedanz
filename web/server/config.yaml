@@ -10,3 +10,17 @@ public_dir: "/public"
 
 # tracing env-filter, e.g. "info" or "info,impedanz_server=debug,tower_http=debug"
 log_filter: "info"
+
+# sqlite database of the member api (users, sessions, events)
+database_path: "/data/impedanz.db"
+
+# uploaded event artwork, served under /media/
+media_dir: "/data/media"
+
+# session cookies carry the Secure flag; disable only for plain-http dev
+cookie_secure: true
+
+# bootstrap admin (only consumed while the users table is empty) —
+# prefer the IMPEDANZ_INITIAL_ADMIN_* environment variables over yaml
+# initial_admin_username: "paul"
+# initial_admin_password: "..."

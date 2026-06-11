@@ -83,6 +83,19 @@ pub async fn router(public_dir: &Path) -> Result<Router, StaticFilesError> {
         .layer(middleware::from_fn(apply_headers)))
 }
 
+/// For routers that serve only content-addressed files (uploaded media
+/// with random names): security headers plus an immutable cache.
+pub async fn immutable_headers(request: Request<Body>, next: Next) -> Response<Body> {
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(header::STRICT_TRANSPORT_SECURITY, STRICT_TRANSPORT_SECURITY);
+    headers.insert(header::X_FRAME_OPTIONS, X_FRAME_OPTIONS);
+    headers.insert(header::X_CONTENT_TYPE_OPTIONS, X_CONTENT_TYPE_OPTIONS);
+    headers.insert(header::REFERRER_POLICY, REFERRER_POLICY);
+    headers.insert(header::CACHE_CONTROL, CACHE_IMMUTABLE);
+    response
+}
+
 async fn apply_headers(request: Request<Body>, next: Next) -> Response<Body> {
     let is_hashed_asset = request.uri().path().starts_with("/_astro/");
     let mut response = next.run(request).await;

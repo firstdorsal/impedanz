@@ -1046,7 +1046,7 @@ dependencies = [
 
 [[package]]
 name = "impedanz-server"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "argon2",
  "axum",
@@ -1061,6 +1061,7 @@ dependencies = [
  "sqlx",
  "tempfile",
  "thiserror",
+ "time",
  "tokio",
  "tower",
  "tower-http",
@@ -1811,6 +1812,7 @@ dependencies = [
  "sqlx-postgres",
  "sqlx-sqlite",
  "syn",
+ "thiserror",
  "tokio",
  "url",
 ]
@@ -2326,6 +2328,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+ "uuid",
 ]
 
 [[package]]

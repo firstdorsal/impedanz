@@ -1,30 +1,9 @@
-//! impedanz-server: serves the static impedanz.net site and hosts the
-//! IMPEDANZ API (OpenAPI under /api/openapi.json, docs under /api/docs).
-
-mod api;
-mod config;
-mod static_files;
-
-use axum::Router;
+use impedanz_server::config::ServerConfig;
+use impedanz_server::ServerError;
 use tower_http::compression::CompressionLayer;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
-use utoipa_swagger_ui::SwaggerUi;
-
-use crate::config::ServerConfig;
-
-#[derive(Debug, thiserror::Error)]
-enum ServerError {
-    #[error(transparent)]
-    Config(#[from] config::ConfigError),
-    #[error("invalid log filter: {0}")]
-    LogFilter(#[from] tracing_subscriber::filter::ParseError),
-    #[error(transparent)]
-    StaticFiles(#[from] static_files::StaticFilesError),
-    #[error("io error: {0}")]
-    Io(#[from] std::io::Error),
-}
 
 #[tokio::main]
 async fn main() -> Result<(), ServerError> {
@@ -35,17 +14,15 @@ async fn main() -> Result<(), ServerError> {
         .init();
     info!(?config, "starting impedanz-server");
 
-    let (api_router, openapi) = api::router();
-
-    let app = Router::new()
-        .merge(api_router)
-        .merge(SwaggerUi::new("/api/docs").url("/api/openapi.json", openapi))
-        .fallback_service(static_files::router(&config.public_dir).await?)
+    let bind_address = config.bind_address;
+    let state = impedanz_server::init_state(config).await?;
+    let app = impedanz_server::app(state)
+        .await?
         // all compression algorithms are enabled (gzip, deflate, br, zstd)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http());
 
-    let listener = tokio::net::TcpListener::bind(config.bind_address).await?;
+    let listener = tokio::net::TcpListener::bind(bind_address).await?;
     info!("listening on {}", listener.local_addr()?);
 
     axum::serve(listener, app)
