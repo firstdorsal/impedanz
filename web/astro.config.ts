@@ -21,6 +21,12 @@ export default defineConfig({
     },
     integrations: [sitemap()],
     vite: {
-        plugins: [tailwindcss()]
+        plugins: [tailwindcss()],
+        build: {
+            // The CSP only allows script-src/img-src 'self': nothing may
+            // be inlined into the HTML (scripts) or CSS (data: urls) —
+            // Astro inlines bundled scripts below this limit otherwise.
+            assetsInlineLimit: 0
+        }
     }
 });
